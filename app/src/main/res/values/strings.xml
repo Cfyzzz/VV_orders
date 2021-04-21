@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Мои заявки</string>
+    <string name="settings">Настройки</string>
+    <string name="send_button">Новая заявка</string>
+    <string name="connectline_strings">Строка подключения:</string>
+    <string name="login_settings">Логин:</string>
+    <string name="password_settings">Пароль:</string>
+    <string name="client_order">Покупатель:</string>
+    <string name="address_order">Адрес:</string>
+    <string name="selected_products">Продукция:</string>
+    <string name="send_order">Отправить заявку</string>
+</resources>
