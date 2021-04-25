@@ -9,4 +9,5 @@
     <string name="address_order">Адрес:</string>
     <string name="selected_products">Продукция:</string>
     <string name="send_order">Отправить заявку</string>
+    <string name="url_api">http://192.168.0.182/OrdersAS/hs/login/</string>
 </resources>

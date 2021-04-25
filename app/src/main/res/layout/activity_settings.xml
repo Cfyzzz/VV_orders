@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".SettingsActivity"
+    android:id="@+id/settings_layout"
     android:orientation="vertical">
 
     <TextView
@@ -15,7 +16,8 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="http://"/>
+        android:text="@string/url_api"
+        android:id="@+id/connect_line_settings"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -48,5 +50,17 @@
             android:layout_height="wrap_content"
             android:hint="secret password"/>
     </LinearLayout>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:id="@+id/send_settings_button" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/status_settings"
+        android:hint="any message"/>
 
 </LinearLayout>
