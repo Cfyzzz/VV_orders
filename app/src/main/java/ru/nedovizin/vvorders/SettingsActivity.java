@@ -2,9 +2,7 @@ package ru.nedovizin.vvorders;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.text.Layout;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -38,18 +36,17 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        settings_layout = (View) findViewById(R.id.settings_layout);
-        connectline_tv = (TextView) findViewById(R.id.connect_line_settings);
-        login = (EditText) findViewById(R.id.login_settings);
+        settings_layout = findViewById(R.id.settings_layout);
+        connectline_tv = findViewById(R.id.connect_line_settings);
+        login = findViewById(R.id.login_settings);
 
-        String url_api = connectline_tv.getText().toString();
-        mRestAdapter = new RestAdapter.Builder().setEndpoint(url_api).build();
-        mUserAPI = mRestAdapter.create(IRestUserAPI.class);
-
-        send_settings_button = (Button) findViewById(R.id.send_settings_button);
+        send_settings_button = findViewById(R.id.send_settings_button);
         send_settings_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String url_api = connectline_tv.getText().toString();
+                mRestAdapter = new RestAdapter.Builder().setEndpoint(url_api).build();
+                mUserAPI = mRestAdapter.create(IRestUserAPI.class);
                 String word = login.getText().toString();
                 loadUserFromRestById(word);
             }
@@ -65,7 +62,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void success(User user, Response response) {
                 viewUser(user);
-                Snackbar.make(settings_layout, "Load user with id: " + userName + response.toString(), LENGTH_SHORT).show();
+                Snackbar.make(settings_layout, "Status: " + user.getStatus(), LENGTH_SHORT).show();
             }
 
             @Override
