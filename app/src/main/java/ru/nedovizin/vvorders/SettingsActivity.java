@@ -1,7 +1,5 @@
 package ru.nedovizin.vvorders;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -9,74 +7,89 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.android.material.snackbar.Snackbar;
+import androidx.appcompat.app.AppCompatActivity;
 
-import retrofit.Callback;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import java.util.List;
 
-import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class SettingsActivity extends AppCompatActivity {
 
+    public String OK_STATUS = "Ok";
+
     private Button send_settings_button;
     private TextView connectline_tv;
+    private TextView settings_status;
     private EditText login;
+    APIInterface apiInterface;
 
-    private IRestUserAPI mUserAPI = null;
-    private RestAdapter mRestAdapter = null;
     private View settings_layout;
     private static final String TAG = ".SettingsActivity";
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
+
         settings_layout = findViewById(R.id.settings_layout);
         connectline_tv = findViewById(R.id.connect_line_settings);
         login = findViewById(R.id.login_settings);
+        settings_status = findViewById(R.id.status_settings);
 
+        login.setText("Елена");
         send_settings_button = findViewById(R.id.send_settings_button);
         send_settings_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String url_api = connectline_tv.getText().toString();
-                mRestAdapter = new RestAdapter.Builder().setEndpoint(url_api).build();
-                mUserAPI = mRestAdapter.create(IRestUserAPI.class);
                 String word = login.getText().toString();
-                loadUserFromRestById(word);
+                apiInterface = APIClient.getClient(url_api).create(APIInterface.class);
+                loadClients(word);
             }
         });
     }
 
-    void loadUserFromRestById(final String userName) {
-        if (mUserAPI == null) {
-            Snackbar.make(settings_layout, "Cant load user", LENGTH_SHORT).show();
-            return;
-        }
-        mUserAPI.getUserById(userName, new Callback<User>() {
+    private void loadClients(String userName) {
+        /**
+         GET List Resources
+         **/
+        Call<MultipleResource> call = apiInterface.doGetListResources(userName);
+        call.enqueue(new Callback<MultipleResource>() {
             @Override
-            public void success(User user, Response response) {
-                viewUser(user);
-                Snackbar.make(settings_layout, "Status: " + user.getStatus(), LENGTH_SHORT).show();
+            public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
+                Log.d(TAG,response.code()+"");
+
+                if (response.code() == 200) {
+
+                    MultipleResource resource = response.body();
+                    String status = resource.status;
+                    String description = resource.description;
+
+                    if (status.equals(OK_STATUS)) {
+                        MultipleResource.Answer answer = resource.answer;
+                        List<MultipleResource.Contragent> mContragents = resource.answer.contragents;
+                        List<MultipleResource.Adress> mAdressess = resource.answer.adresses;
+
+//                        for (MultipleResource.Datum datum : datumList) {
+//                            displayResponse += datum.id + " " + datum.name + " " + datum.pantoneValue + " " + datum.year + "\n";
+//                        }
+
+                        settings_status.setText(description + " " + Integer.toString(mAdressess.size()));
+                    } else {
+                        settings_status.setText(description);
+                    }
+                }
             }
 
             @Override
-            public void failure(RetrofitError error) {
-                Log.d(TAG, error.toString());
-                Snackbar.make(settings_layout, "Load user with id: " + userName + " error: "
-                        + error.toString(), LENGTH_SHORT).show();
+            public void onFailure(Call<MultipleResource> call, Throwable t) {
+
             }
         });
-    }
-
-    void viewUser(User user) {
-        TextView status_settings = (TextView) findViewById(R.id.status_settings);
-        status_settings.setText(user.getDescription());
     }
 }
 
