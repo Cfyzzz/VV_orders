@@ -76,7 +76,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     void viewUser(User user) {
         TextView status_settings = (TextView) findViewById(R.id.status_settings);
-        status_settings.setText(user.getName());
+        status_settings.setText(user.getDescription());
     }
 }
 
