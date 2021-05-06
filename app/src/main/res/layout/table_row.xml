@@ -1,21 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="wrap_content"
-    android:layout_width="match_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
-    <TextView android:id="@+id/col1" android:text=""
-        android:layout_weight="0"
+    <TextView
+        android:id="@+id/col1"
         android:layout_width="16dp"
-        android:gravity="center"/>
-    <TextView android:id="@+id/col2" android:text=""
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:gravity="center"
+        android:text="" />
+
+    <TextView
+        android:id="@+id/col2"
+        android:layout_width="24dp"
+        android:layout_height="wrap_content"
         android:layout_weight="0"
         android:gravity="right"
-        android:layout_width="24dp"
-        android:paddingRight="4dp"/>
-    <TextView android:id="@+id/col3" android:text=""
+        android:paddingRight="4dp"
+        android:text="" />
+
+    <TextView
+        android:id="@+id/col3"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_weight="0"
         android:gravity="left"
-        android:textSize="24sp"/>
+        android:text=""
+        android:textSize="24sp" />
 
-</TableRow>
+</LinearLayout>

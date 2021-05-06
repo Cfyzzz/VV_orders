@@ -54,14 +54,14 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void loadClients(String userName) {
-        /**
+        /*
          GET List Resources
          **/
         Call<MultipleResource> call = apiInterface.doGetListResources(userName);
         call.enqueue(new Callback<MultipleResource>() {
             @Override
             public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
-                Log.d(TAG,response.code()+"");
+                Log.d(TAG, response.code() + "");
 
                 if (response.code() == 200) {
 
@@ -82,12 +82,14 @@ public class SettingsActivity extends AppCompatActivity {
                     } else {
                         settings_status.setText(description);
                     }
+                } else {
+                    settings_status.setText("Ошибка соединения");
                 }
             }
 
             @Override
             public void onFailure(Call<MultipleResource> call, Throwable t) {
-
+                settings_status.setText("Ошибка соединения");
             }
         });
     }

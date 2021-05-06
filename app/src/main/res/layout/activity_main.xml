@@ -7,12 +7,12 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <TableLayout
+    <ListView
         android:id="@+id/table_clients"
         android:layout_width="match_parent"
         android:layout_above="@id/status_line"
         android:layout_height="wrap_content">
-    </TableLayout>
+    </ListView>
 
     <TextView
         android:id="@+id/status_line"
