@@ -10,4 +10,5 @@
     <string name="selected_products">Продукция:</string>
     <string name="send_order">Отправить заявку</string>
     <string name="url_api">http://192.168.0.182</string>
+    <string name="utdate_clients_button_settings">Обновить контрагентов</string>
 </resources>

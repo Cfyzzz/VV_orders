@@ -7,9 +7,8 @@
     tools:context=".ListActivity"
     android:orientation="vertical">
 
-    <TableLayout
+    <ListView
         android:id="@+id/table_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-    </TableLayout>
+        android:layout_height="wrap_content"></ListView>
 </LinearLayout>

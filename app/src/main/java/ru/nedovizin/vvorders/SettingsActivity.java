@@ -1,5 +1,6 @@
 package ru.nedovizin.vvorders;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -20,13 +21,14 @@ public class SettingsActivity extends AppCompatActivity {
 
     public String OK_STATUS = "Ok";
 
-    private Button send_settings_button;
-    private TextView connectline_tv;
-    private TextView settings_status;
+    private Button mSendSettingsButton;
+    private Button mUdateCleintsButton;
+    private TextView mConnectlineTv;
+    private TextView mSettingsStatus;
     private EditText login;
     APIInterface apiInterface;
 
-    private View settings_layout;
+    private View mSettingsLayout;
     private static final String TAG = ".SettingsActivity";
 
     @Override
@@ -35,20 +37,34 @@ public class SettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_settings);
 
 
-        settings_layout = findViewById(R.id.settings_layout);
-        connectline_tv = findViewById(R.id.connect_line_settings);
+        mSettingsLayout = findViewById(R.id.settings_layout);
+        mConnectlineTv = findViewById(R.id.connect_line_settings);
         login = findViewById(R.id.login_settings);
-        settings_status = findViewById(R.id.status_settings);
+        mSettingsStatus = findViewById(R.id.status_settings);
 
+        // TODO - убрать после отладки
         login.setText("Елена");
-        send_settings_button = findViewById(R.id.send_settings_button);
-        send_settings_button.setOnClickListener(new View.OnClickListener() {
+
+        mUdateCleintsButton = findViewById(R.id.update_clients);
+        mUdateCleintsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String url_api = connectline_tv.getText().toString();
-                String word = login.getText().toString();
+                String url_api = mConnectlineTv.getText().toString();
+                String userName = login.getText().toString();
                 apiInterface = APIClient.getClient(url_api).create(APIInterface.class);
-                loadClients(word);
+                loadClients(userName);
+            }
+        });
+
+        // TODO - Тестовая кнопка
+        mSendSettingsButton = findViewById(R.id.send_settings_button);
+        mSendSettingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO - это кнопка для тестов
+                // Открываем список клиентов в базе
+                Intent intent = new Intent(getApplicationContext(), ListActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -71,25 +87,30 @@ public class SettingsActivity extends AppCompatActivity {
 
                     if (status.equals(OK_STATUS)) {
                         MultipleResource.Answer answer = resource.answer;
-                        List<MultipleResource.Contragent> mContragents = resource.answer.contragents;
+                        List<Contragent> mContragents = resource.answer.contragents;
                         List<MultipleResource.Adress> mAdressess = resource.answer.adresses;
 
+                        // TODO - Пытаемся записать в базу принятые данные
+                        for (Contragent contragent : mContragents) {
+                            ClientLab clietnLab = new ClientLab(getBaseContext());
+                            clietnLab.addClient(contragent);
+                        }
 //                        for (MultipleResource.Datum datum : datumList) {
 //                            displayResponse += datum.id + " " + datum.name + " " + datum.pantoneValue + " " + datum.year + "\n";
 //                        }
 
-                        settings_status.setText(description + " " + Integer.toString(mAdressess.size()));
+                        mSettingsStatus.setText(description + " " + Integer.toString(mAdressess.size()));
                     } else {
-                        settings_status.setText(description);
+                        mSettingsStatus.setText(description);
                     }
                 } else {
-                    settings_status.setText("Ошибка соединения");
+                    mSettingsStatus.setText("Ошибка соединения (не 200)");
                 }
             }
 
             @Override
             public void onFailure(Call<MultipleResource> call, Throwable t) {
-                settings_status.setText("Ошибка соединения");
+                mSettingsStatus.setText("Ошибка соединения (Failure)");
             }
         });
     }

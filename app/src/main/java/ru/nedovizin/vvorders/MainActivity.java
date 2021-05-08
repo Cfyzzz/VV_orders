@@ -7,21 +7,24 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends MenuActivity {
 
     private Button send_button;
-    private ArrayList<String> clients = new ArrayList<String>();
+    private List<Contragent> clients;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        for (int i = 1; i < 20; i++) {
-            clients.add("any predprinimatel any predprinimatel any predprinimatel");
-        }
+        // TODO - Заменить на показ свежих заявок по клиентам
+//        for (int i = 1; i < 20; i++) {
+//            clients.add("any predprinimatel any predprinimatel any predprinimatel");
+//        }
+        ClientLab clietnLab = new ClientLab(getBaseContext());
+        clients = clietnLab.getClients();
         addRows(clients);
 
         send_button = (Button) findViewById(R.id.send_button);
@@ -34,9 +37,9 @@ public class MainActivity extends MenuActivity {
         });
     }
 
-    private void addRows(ArrayList<String> line) {
-        ListView listViewTest=(ListView)findViewById(R.id.table_clients);
-        ClientsListAdapter clientsListAdapter =new ClientsListAdapter(line);
-        listViewTest.setAdapter(clientsListAdapter);
+    private void addRows(List<Contragent> clients) {
+        ListView listViewClients=(ListView)findViewById(R.id.table_clients);
+        ClientsListAdapter clientsListAdapter =new ClientsListAdapter(clients);
+        listViewClients.setAdapter(clientsListAdapter);
     }
 }

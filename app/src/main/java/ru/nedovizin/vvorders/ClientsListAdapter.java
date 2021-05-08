@@ -7,12 +7,13 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ClientsListAdapter extends BaseAdapter {
 
-    private ArrayList<String> data;
+    private List<Contragent> data;
 
-    ClientsListAdapter(ArrayList<String> data) {
+    ClientsListAdapter(List<Contragent> data) {
         this.data = data;
     }
 
@@ -41,7 +42,7 @@ public class ClientsListAdapter extends BaseAdapter {
         tv = (TextView) convertView.findViewById(R.id.col2);
         tv.setText(Integer.toString(position));
         tv = (TextView) convertView.findViewById(R.id.col3);
-        tv.setText(data.get(position));
+        tv.setText(data.get(position).name);
         return convertView;
     }
 }
