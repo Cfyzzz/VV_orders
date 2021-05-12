@@ -1,7 +1,9 @@
-package ru.nedovizin.vvorders;
+package ru.nedovizin.vvorders.ui;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
+
+import ru.nedovizin.vvorders.models.Contragent;
 
 public class MultipleResource {
     @SerializedName("status")

@@ -1,4 +1,4 @@
-package ru.nedovizin.vvorders;
+package ru.nedovizin.vvorders.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,8 +6,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import ru.nedovizin.vvorders.ClientsListAdapter;
+import ru.nedovizin.vvorders.R;
+import ru.nedovizin.vvorders.models.ClientLab;
+import ru.nedovizin.vvorders.models.Contragent;
 
 public class MainActivity extends MenuActivity {
 

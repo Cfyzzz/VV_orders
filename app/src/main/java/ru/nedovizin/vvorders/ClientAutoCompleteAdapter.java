@@ -1,9 +1,6 @@
 package ru.nedovizin.vvorders;
 
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.ServiceConnection;
-import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +12,9 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.nedovizin.vvorders.models.ClientLab;
+import ru.nedovizin.vvorders.models.Contragent;
+
 public class ClientAutoCompleteAdapter extends BaseAdapter implements Filterable {
 
     private static final int MAX_RESULTS = 10;
@@ -22,18 +22,18 @@ public class ClientAutoCompleteAdapter extends BaseAdapter implements Filterable
     private final Context mContext;
     private List<Contragent> mResults;
 
-    private ServiceConnection mServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            ClientsService.MyBinder binder = (ClientsService.MyBinder) service;
-            ClientsService clientsService = binder.getService();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-
-        }
-    };
+//    private ServiceConnection mServiceConnection = new ServiceConnection() {
+//        @Override
+//        public void onServiceConnected(ComponentName name, IBinder service) {
+//            ClientsService.MyBinder binder = (ClientsService.MyBinder) service;
+//            ClientsService clientsService = binder.getService();
+//        }
+//
+//        @Override
+//        public void onServiceDisconnected(ComponentName name) {
+//
+//        }
+//    };
 
     public ClientAutoCompleteAdapter(Context context) {
         mContext = context;

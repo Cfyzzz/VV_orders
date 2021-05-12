@@ -1,10 +1,9 @@
-package ru.nedovizin.vvorders;
+package ru.nedovizin.vvorders.models;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +44,6 @@ public class ClientLab {
             while (!cursor.isAfterLast()) {
                 clients.add(cursor.getClient());
                 cursor.moveToNext();
-                Log.d(">>>>>.Service", "perebor");
             }
         }
         return clients;

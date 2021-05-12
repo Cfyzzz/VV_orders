@@ -1,4 +1,4 @@
-package ru.nedovizin.vvorders;
+package ru.nedovizin.vvorders.ui;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
+
+import ru.nedovizin.vvorders.R;
+import ru.nedovizin.vvorders.models.SettingsActivity;
 
 public class MenuActivity extends AppCompatActivity {
 

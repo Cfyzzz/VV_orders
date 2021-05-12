@@ -1,4 +1,4 @@
-package ru.nedovizin.vvorders;
+package ru.nedovizin.vvorders.models;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,6 +15,11 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import ru.nedovizin.vvorders.http.APIClient;
+import ru.nedovizin.vvorders.http.APIInterface;
+import ru.nedovizin.vvorders.R;
+import ru.nedovizin.vvorders.ui.ListActivity;
+import ru.nedovizin.vvorders.ui.MultipleResource;
 
 
 public class SettingsActivity extends AppCompatActivity {

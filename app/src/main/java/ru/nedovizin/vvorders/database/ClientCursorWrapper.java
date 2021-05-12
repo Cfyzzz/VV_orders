@@ -3,7 +3,7 @@ package ru.nedovizin.vvorders.database;
 import android.database.Cursor;
 import android.database.CursorWrapper;
 
-import ru.nedovizin.vvorders.Contragent;
+import ru.nedovizin.vvorders.models.Contragent;
 
 public class ClientCursorWrapper extends CursorWrapper {
     public ClientCursorWrapper(Cursor cursor) {

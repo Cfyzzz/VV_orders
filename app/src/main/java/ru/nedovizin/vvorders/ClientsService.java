@@ -10,7 +10,12 @@ import androidx.annotation.Nullable;
 
 import java.util.List;
 
+import ru.nedovizin.vvorders.models.ClientLab;
+import ru.nedovizin.vvorders.models.Contragent;
 
+
+// TODO - Пока не используется, но планируется для выделения получения из базы клиентов выделить
+//  в отдельный сервис
 public class ClientsService extends Service {
 
     private Context mContext;

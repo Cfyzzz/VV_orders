@@ -4,8 +4,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import androidx.annotation.Nullable;
-
 import ru.nedovizin.vvorders.database.ClientDbSchema.ClientTable;
 
 public class ClientBaseHelper extends SQLiteOpenHelper {

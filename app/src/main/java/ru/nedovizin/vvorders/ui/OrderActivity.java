@@ -1,9 +1,14 @@
-package ru.nedovizin.vvorders;
+package ru.nedovizin.vvorders.ui;
 
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ProgressBar;
+
+import ru.nedovizin.vvorders.ClientAutoCompleteAdapter;
+import ru.nedovizin.vvorders.DelayAutoCompleteTextView;
+import ru.nedovizin.vvorders.R;
+import ru.nedovizin.vvorders.models.Contragent;
 
 public class OrderActivity extends MenuActivity {
 

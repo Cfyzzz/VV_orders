@@ -1,4 +1,4 @@
-package ru.nedovizin.vvorders;
+package ru.nedovizin.vvorders.models;
 
 import com.google.gson.annotations.SerializedName;
 

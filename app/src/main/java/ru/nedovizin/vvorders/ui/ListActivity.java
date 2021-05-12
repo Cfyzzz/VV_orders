@@ -1,6 +1,8 @@
-package ru.nedovizin.vvorders;
+package ru.nedovizin.vvorders.ui;
 
 import android.os.Bundle;
+
+import ru.nedovizin.vvorders.R;
 
 
 public class ListActivity extends MenuActivity {

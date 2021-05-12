@@ -6,14 +6,15 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import ru.nedovizin.vvorders.models.Contragent;
 
 public class ClientsListAdapter extends BaseAdapter {
 
     private List<Contragent> data;
 
-    ClientsListAdapter(List<Contragent> data) {
+    public ClientsListAdapter(List<Contragent> data) {
         this.data = data;
     }
 
