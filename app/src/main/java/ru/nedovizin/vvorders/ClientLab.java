@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,19 @@ public class ClientLab {
     public void addClient(Contragent c) {
         ContentValues values = getContentValues(c);
         mDatabase.insert(ClientTable.NAME, null, values);
+    }
+
+    public List<Contragent> getClientsByLikeName(String word) {
+        List<Contragent> clients = new ArrayList<>();
+        try (ClientCursorWrapper cursor = queryClients(Cols.NAME + " LIKE \'" + word + "%\'", null)) {
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                clients.add(cursor.getClient());
+                cursor.moveToNext();
+                Log.d(">>>>>.Service", "perebor");
+            }
+        }
+        return clients;
     }
 
     public List<Contragent> getClients() {

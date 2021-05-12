@@ -20,9 +20,6 @@ public class MainActivity extends MenuActivity {
         setContentView(R.layout.activity_main);
 
         // TODO - Заменить на показ свежих заявок по клиентам
-//        for (int i = 1; i < 20; i++) {
-//            clients.add("any predprinimatel any predprinimatel any predprinimatel");
-//        }
         ClientLab clietnLab = new ClientLab(getBaseContext());
         clients = clietnLab.getClients();
         addRows(clients);

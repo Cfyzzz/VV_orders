@@ -4,26 +4,40 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".OrderActivity"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:context=".OrderActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0">
+        android:layout_weight="0"
+        android:orientation="horizontal">
+
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/client_order"/>
+            android:text="@string/client_order" />
 
-        <EditText
+        <ru.nedovizin.vvorders.DelayAutoCompleteTextView
             android:id="@+id/client"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            tools:text="Какой-то клиент" />
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            style="?android:attr/progressBarStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="Какой-то клиент"/>
+            android:layout_gravity="center_vertical|right"
+            android:layout_marginRight="16dp"
+            android:visibility="gone" />
+
     </LinearLayout>
 
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -32,13 +46,13 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/address_order"/>
+            android:text="@string/address_order" />
 
         <EditText
             android:id="@+id/address"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            tools:text="Новоагарёва, ул. Неизвестного, 12 Вывеска 'Не входить!'"/>
+            tools:text="Новоагарёва, ул. Неизвестного, 12 Вывеска 'Не входить!'" />
     </LinearLayout>
 
     <TextView
@@ -50,22 +64,20 @@
         android:id="@+id/table_products"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1">
-    </TableLayout>
+        android:layout_weight="1"></TableLayout>
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:text = "зав сл клуб 2"
+        android:background="#D1EAF3"
         android:textSize="36sp"
-        android:background="#D1EAF3"/>
+        tools:text="зав сл клуб 2" />
 
     <TableLayout
         android:id="@+id/table_variants_of_products"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1">
-    </TableLayout>
+        android:layout_weight="1"></TableLayout>
 
     <Button
         android:layout_width="match_parent"

@@ -35,8 +35,8 @@ public class ClientsListAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.table_row, parent, false);
-        TextView textView = (TextView) convertView.findViewById(R.id.col3);
-        textView.setText("New Layout");
+//        TextView textView = (TextView) convertView.findViewById(R.id.col3);
+//        textView.setText("New Layout");
         TextView tv = (TextView) convertView.findViewById(R.id.col1);
         tv.setText((position%2==0)?"V":" ");
         tv = (TextView) convertView.findViewById(R.id.col2);
