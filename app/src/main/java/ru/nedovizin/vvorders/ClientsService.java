@@ -41,7 +41,7 @@ public class ClientsService extends Service {
     }
 
     public List<Contragent> findClients(String word) {
-        ClientLab clietnLab = new ClientLab(getBaseContext());
+        ClientLab clietnLab = ClientLab.get(getBaseContext());
         List<Contragent> clients = clietnLab.getClientsByLikeName(word);
         return clients;
     }

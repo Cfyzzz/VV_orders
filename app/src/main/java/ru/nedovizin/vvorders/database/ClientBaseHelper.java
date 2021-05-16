@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import ru.nedovizin.vvorders.database.ClientDbSchema.AddressTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.ClientTable;
 
 public class ClientBaseHelper extends SQLiteOpenHelper {
@@ -17,10 +18,14 @@ public class ClientBaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("create table " + ClientTable.NAME + "(" +
-                " _id integer primary key AUTOINCREMENT, " +
                 ClientTable.Cols.CODE + ", " +
-                ClientTable.Cols.NAME +
-                ")"
+                ClientTable.Cols.NAME + ", " +
+                " primary key (code))"
+        );
+        db.execSQL("create table " + AddressTable.NAME + "(" +
+                AddressTable.Cols.CODE + ", " +
+                AddressTable.Cols.NAME + ", " +
+                "unique(code, name) ON CONFLICT replace)"
         );
     }
 

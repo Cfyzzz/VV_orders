@@ -19,6 +19,7 @@ import ru.nedovizin.vvorders.http.APIClient;
 import ru.nedovizin.vvorders.http.APIInterface;
 import ru.nedovizin.vvorders.R;
 import ru.nedovizin.vvorders.http.MultipleResource;
+import ru.nedovizin.vvorders.models.Address;
 import ru.nedovizin.vvorders.models.ClientLab;
 import ru.nedovizin.vvorders.models.Contragent;
 
@@ -93,19 +94,20 @@ public class SettingsActivity extends AppCompatActivity {
 
                     if (status.equals(OK_STATUS)) {
                         MultipleResource.Answer answer = resource.answer;
-                        List<Contragent> mContragents = resource.answer.contragents;
-                        List<MultipleResource.Address> mAdressesses = resource.answer.mAddresses;
+                        List<Contragent> mContragents = answer.contragents;
+                        List<Address> mAdresses = answer.mAddresses;
 
                         // TODO - Пытаемся записать в базу принятые данные
+                        ClientLab clietnLab = ClientLab.get(getBaseContext());
                         for (Contragent contragent : mContragents) {
-                            ClientLab clietnLab = new ClientLab(getBaseContext());
                             clietnLab.addClient(contragent);
                         }
-//                        for (MultipleResource.Datum datum : datumList) {
-//                            displayResponse += datum.id + " " + datum.name + " " + datum.pantoneValue + " " + datum.year + "\n";
-//                        }
 
-                        mSettingsStatus.setText(description + " " + Integer.toString(mAdressesses.size()));
+                        for (Address address : mAdresses) {
+                            clietnLab.addAddress(address);
+                        }
+
+                        mSettingsStatus.setText(description + " " + Integer.toString(mAdresses.size()));
                     } else {
                         mSettingsStatus.setText(description);
                     }
