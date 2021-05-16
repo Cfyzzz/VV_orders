@@ -21,9 +21,11 @@
 
         <ru.nedovizin.vvorders.DelayAutoCompleteTextView
             android:id="@+id/client"
-            android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:nextFocusRight="@id/address"
+            android:nextFocusForward="@id/address"
             tools:text="Какой-то клиент" />
 
         <ProgressBar
@@ -48,10 +50,13 @@
             android:layout_height="wrap_content"
             android:text="@string/address_order" />
 
-        <EditText
+        <ru.nedovizin.vvorders.DelayAutoCompleteTextView
             android:id="@+id/address"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:nextFocusLeft="@id/client"
+            android:nextFocusRight="@id/product_input"
+            android:nextFocusForward="@id/product_input"
             tools:text="Новоагарёва, ул. Неизвестного, 12 Вывеска 'Не входить!'" />
     </LinearLayout>
 
@@ -67,6 +72,7 @@
         android:layout_weight="1"></TableLayout>
 
     <EditText
+        android:id="@+id/product_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#D1EAF3"

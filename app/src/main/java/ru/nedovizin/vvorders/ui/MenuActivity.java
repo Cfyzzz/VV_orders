@@ -8,7 +8,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import ru.nedovizin.vvorders.R;
-import ru.nedovizin.vvorders.models.SettingsActivity;
 
 public class MenuActivity extends AppCompatActivity {
 

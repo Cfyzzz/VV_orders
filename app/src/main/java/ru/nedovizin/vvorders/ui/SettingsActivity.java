@@ -1,4 +1,4 @@
-package ru.nedovizin.vvorders.models;
+package ru.nedovizin.vvorders.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -18,8 +18,9 @@ import retrofit2.Response;
 import ru.nedovizin.vvorders.http.APIClient;
 import ru.nedovizin.vvorders.http.APIInterface;
 import ru.nedovizin.vvorders.R;
-import ru.nedovizin.vvorders.ui.ListActivity;
-import ru.nedovizin.vvorders.ui.MultipleResource;
+import ru.nedovizin.vvorders.http.MultipleResource;
+import ru.nedovizin.vvorders.models.ClientLab;
+import ru.nedovizin.vvorders.models.Contragent;
 
 
 public class SettingsActivity extends AppCompatActivity {
@@ -93,7 +94,7 @@ public class SettingsActivity extends AppCompatActivity {
                     if (status.equals(OK_STATUS)) {
                         MultipleResource.Answer answer = resource.answer;
                         List<Contragent> mContragents = resource.answer.contragents;
-                        List<MultipleResource.Adress> mAdressess = resource.answer.adresses;
+                        List<MultipleResource.Address> mAdressesses = resource.answer.mAddresses;
 
                         // TODO - Пытаемся записать в базу принятые данные
                         for (Contragent contragent : mContragents) {
@@ -104,7 +105,7 @@ public class SettingsActivity extends AppCompatActivity {
 //                            displayResponse += datum.id + " " + datum.name + " " + datum.pantoneValue + " " + datum.year + "\n";
 //                        }
 
-                        mSettingsStatus.setText(description + " " + Integer.toString(mAdressess.size()));
+                        mSettingsStatus.setText(description + " " + Integer.toString(mAdressesses.size()));
                     } else {
                         mSettingsStatus.setText(description);
                     }

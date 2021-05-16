@@ -1,4 +1,4 @@
-package ru.nedovizin.vvorders.ui;
+package ru.nedovizin.vvorders.http;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
@@ -17,14 +17,16 @@ public class MultipleResource {
         @SerializedName("Контрагенты")
         public List<Contragent> contragents = null;
         @SerializedName("АдресаДоставки")
-        public List<Adress> adresses = null;
+        public List<Address> mAddresses = null;
     }
 
-    public class Adress {
+    public class Address {
         @SerializedName("АдресДоставки")
         public String name;
         @SerializedName("Код")
         public String code;
+        @SerializedName("КодКонтрагента")
+        public String codeContragent;
     }
 }
 
