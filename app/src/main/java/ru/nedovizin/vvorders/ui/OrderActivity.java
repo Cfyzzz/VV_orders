@@ -5,7 +5,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.TextView;
+
+import java.util.List;
 
 import ru.nedovizin.vvorders.AddressAutoCompleteAdapter;
 import ru.nedovizin.vvorders.ClientAutoCompleteAdapter;
@@ -17,10 +18,14 @@ import ru.nedovizin.vvorders.models.Contragent;
 
 public class OrderActivity extends MenuActivity {
 
+    ClientLab mClientLab;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order);
+
+        mClientLab = ClientLab.get(getBaseContext());
 
         DelayAutoCompleteTextView addressTitle = (DelayAutoCompleteTextView) findViewById(R.id.address);
         DelayAutoCompleteTextView clientTitle = (DelayAutoCompleteTextView) findViewById(R.id.client);
@@ -35,7 +40,14 @@ public class OrderActivity extends MenuActivity {
                 Contragent client = (Contragent) adapterView.getItemAtPosition(position);
                 clientTitle.setText(client.name);
                 addressTitle.requestFocus();
-                ClientLab.get(getBaseContext()).setCurrentClient(client);
+                mClientLab.setCurrentClient(client);
+                List<Address> addresses = mClientLab.getAddressesByClient(client);
+                if (addresses.size() == 1) {
+                    addressTitle.setText(addresses.get(0).name);
+                    productInput.requestFocus();
+                } else {
+                    addressTitle.setText(" ");
+                }
             }
         });
 

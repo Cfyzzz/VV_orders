@@ -139,6 +139,24 @@ public class ClientLab {
         return addresses;
     }
 
+    public List<Address> getAddressesByClient(Contragent client) {
+        List<Address> addresses = new ArrayList<>();
+        Log.d(TAG, "current client: " + getCurrentClient());
+        try (AddressCursorWrapper cursor = queryAddresses(
+                AddressTable.Cols.CODE + "=\'" + client.code + "\'",
+                null)
+        ) {
+            Log.d(TAG, "Entry in cycle...");
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                addresses.add(cursor.getAddress());
+                cursor.moveToNext();
+            }
+        }
+        Log.d(TAG, "count adresses: " + addresses.size());
+        return addresses;
+    }
+
     private static ContentValues getClientValues(Contragent client) {
         ContentValues values = new ContentValues();
         values.put(ClientTable.Cols.NAME, client.name);
