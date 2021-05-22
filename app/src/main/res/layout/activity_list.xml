@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,7 +7,22 @@
     android:orientation="vertical">
 
     <ListView
-        android:id="@+id/table_list"
+        android:id="@+id/table_clients"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"></ListView>
-</LinearLayout>
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/status_line"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/send_button"
+        android:text="Статусное сообщение"/>
+
+    <Button
+        android:id="@+id/send_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:text="@string/send_button"/>
+
+</RelativeLayout>
