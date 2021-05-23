@@ -6,7 +6,7 @@
     tools:context=".ui.ListActivity"
     android:orientation="vertical">
 
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/table_clients"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
