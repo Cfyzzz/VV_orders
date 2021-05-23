@@ -56,6 +56,7 @@ public class SettingsActivity extends AppCompatActivity {
         mUdateCleintsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mSettingsStatus.setText("");
                 String url_api = mConnectlineTv.getText().toString();
                 String userName = login.getText().toString();
                 apiInterface = APIClient.getClient(url_api).create(APIInterface.class);
