@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import ru.nedovizin.vvorders.database.ClientDbSchema.AddressTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.ClientTable;
+import ru.nedovizin.vvorders.database.ClientDbSchema.ProductTable;
 
 public class ClientBaseHelper extends SQLiteOpenHelper {
     public static final int VERSION = 1;
@@ -20,12 +21,18 @@ public class ClientBaseHelper extends SQLiteOpenHelper {
         db.execSQL("create table " + ClientTable.NAME + "(" +
                 ClientTable.Cols.CODE + ", " +
                 ClientTable.Cols.NAME + ", " +
-                " primary key (code))"
+                " unique(code) ON CONFLICT ignore)"
         );
         db.execSQL("create table " + AddressTable.NAME + "(" +
                 AddressTable.Cols.CODE + ", " +
                 AddressTable.Cols.NAME + ", " +
                 "unique(code, name) ON CONFLICT replace)"
+        );
+        db.execSQL("create table " + ProductTable.NAME + "(" +
+                ProductTable.Cols.CODE + ", " +
+                ProductTable.Cols.NAME + ", " +
+                ProductTable.Cols.WEIGHT + ", " +
+                " unique(code) ON CONFLICT ignore)"
         );
     }
 

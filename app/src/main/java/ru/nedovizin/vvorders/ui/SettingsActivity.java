@@ -22,6 +22,7 @@ import ru.nedovizin.vvorders.http.MultipleResource;
 import ru.nedovizin.vvorders.models.Address;
 import ru.nedovizin.vvorders.models.ClientLab;
 import ru.nedovizin.vvorders.models.Contragent;
+import ru.nedovizin.vvorders.models.Product;
 
 
 public class SettingsActivity extends AppCompatActivity {
@@ -29,7 +30,8 @@ public class SettingsActivity extends AppCompatActivity {
     public String OK_STATUS = "Ok";
 
     private Button mSendSettingsButton;
-    private Button mUdateCleintsButton;
+    private Button mUpdateCleintsButton;
+    private Button mUpdateProductsButton;
     private TextView mConnectlineTv;
     private TextView mSettingsStatus;
     private EditText login;
@@ -52,15 +54,27 @@ public class SettingsActivity extends AppCompatActivity {
         // TODO - убрать после отладки
         login.setText("Елена");
 
-        mUdateCleintsButton = findViewById(R.id.update_clients);
-        mUdateCleintsButton.setOnClickListener(new View.OnClickListener() {
+        mUpdateCleintsButton = findViewById(R.id.update_clients);
+        mUpdateCleintsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mSettingsStatus.setText("");
                 String url_api = mConnectlineTv.getText().toString();
                 String userName = login.getText().toString();
-                apiInterface = APIClient.getClient(url_api).create(APIInterface.class);
+                apiInterface = APIClient.getData(url_api).create(APIInterface.class);
                 loadClients(userName);
+            }
+        });
+
+        mUpdateProductsButton = findViewById(R.id.update_products);
+        mUpdateProductsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSettingsStatus.setText("");
+                String url_api = mConnectlineTv.getText().toString();
+                String userName = login.getText().toString();
+                apiInterface = APIClient.getData(url_api).create(APIInterface.class);
+                loadProducts(userName);
             }
         });
 
@@ -77,15 +91,25 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
+    private void loadProducts(String userName) {
+        Call<MultipleResource> call = apiInterface.doGetListProducts(userName);
+        loadData(call);
+    }
+
     private void loadClients(String userName) {
+        Call<MultipleResource> call = apiInterface.doGetListClients(userName);
+        loadData(call);
+    }
+
+    private void loadData(Call<MultipleResource> call) {
         /*
          GET List Resources
          **/
-        Call<MultipleResource> call = apiInterface.doGetListResources(userName);
         call.enqueue(new Callback<MultipleResource>() {
             @Override
             public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
-                Log.d(TAG, response.code() + "");
+//              // TODO - Нужно убрать response.body(), чтобы не сыпать в логи тело ответа
+                Log.d(TAG, response.code() + " " + response.body());
 
                 if (response.code() == 200) {
 
@@ -95,22 +119,34 @@ public class SettingsActivity extends AppCompatActivity {
 
                     if (status.equals(OK_STATUS)) {
                         MultipleResource.Answer answer = resource.answer;
-                        List<Contragent> mContragents = answer.contragents;
+                        List<Contragent> mContragents = answer.mContragents;
                         List<Address> mAdresses = answer.mAddresses;
+                        List<Product> mProduct = answer.mProducts;
 
-                        // TODO - Пытаемся записать в базу принятые данные
+                        // Пытаемся записать в базу принятые данные
                         ClientLab clietnLab = ClientLab.get(getBaseContext());
-                        for (Contragent contragent : mContragents) {
-                            clietnLab.addClient(contragent);
+
+                        if (mContragents != null) {
+                            for (Contragent contragent : mContragents) {
+                                clietnLab.addClient(contragent);
+                            }
                         }
 
-                        for (Address address : mAdresses) {
-                            clietnLab.addAddress(address);
+                        if (mAdresses != null) {
+                            for (Address address : mAdresses) {
+                                clietnLab.addAddress(address);
+                            }
                         }
 
-                        mSettingsStatus.setText(description + " " + Integer.toString(mAdresses.size()));
+                        if (mProduct != null) {
+                            for (Product product : mProduct) {
+                                clietnLab.addProduct(product);
+                            }
+                        }
+
+                        mSettingsStatus.setText(description + " It's saved...");
                     } else {
-                        mSettingsStatus.setText(description);
+                        mSettingsStatus.setText(description + " It's not saved!");
                     }
                 } else {
                     mSettingsStatus.setText("Ошибка соединения (не 200)");
@@ -119,7 +155,7 @@ public class SettingsActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<MultipleResource> call, Throwable t) {
-                mSettingsStatus.setText("Ошибка соединения (Failure)");
+                mSettingsStatus.setText("Ошибка соединения (Failure): ");
             }
         });
     }

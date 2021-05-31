@@ -14,9 +14,6 @@
         android:theme="@style/Theme.VVOrders"
         android:usesCleartextTraffic="true"
         tools:targetApi="m">
-        <service
-            android:name=".ClientsService"
-            android:exported="false"></service>
 
         <activity android:name=".ui.MenuActivity" />
         <activity
@@ -50,3 +47,5 @@
     </application>
 
 </manifest>
+
+<!-- https://stackoverflow.com/questions/53766789/failed-to-open-qemu-pipe-qemudnetwork-invalid-argument-->

@@ -15,6 +15,7 @@ import ru.nedovizin.vvorders.database.ClientCursorWrapper;
 import ru.nedovizin.vvorders.database.ClientDbSchema;
 import ru.nedovizin.vvorders.database.ClientDbSchema.ClientTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.AddressTable;
+import ru.nedovizin.vvorders.database.ClientDbSchema.ProductTable;
 
 public class ClientLab {
 
@@ -54,6 +55,11 @@ public class ClientLab {
     public void addAddress(Address address) {
         ContentValues values = getAddressValues(address);
         mDatabase.insert(AddressTable.NAME, null, values);
+    }
+
+    public void addProduct(Product product) {
+        ContentValues values = getProductValues(product);
+        mDatabase.insert(ProductTable.NAME, null, values);
     }
 
     public List<Contragent> getClientsByLikeName(String word) {
@@ -168,6 +174,14 @@ public class ClientLab {
         ContentValues values = new ContentValues();
         values.put(AddressTable.Cols.NAME, address.name);
         values.put(AddressTable.Cols.CODE, address.code);
+        return values;
+    }
+
+    private static ContentValues getProductValues(Product product) {
+        ContentValues values = new ContentValues();
+        values.put(ProductTable.Cols.NAME, product.name);
+        values.put(ProductTable.Cols.CODE, product.code);
+        values.put(ProductTable.Cols.WEIGHT, product.weight);
         return values;
     }
 }

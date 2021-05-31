@@ -69,4 +69,10 @@
         android:layout_height="wrap_content"
         android:text="@string/utdate_clients_button_settings"/>
 
+    <Button
+        android:id="@+id/update_products"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/update_products_button_settings" />
+
 </LinearLayout>

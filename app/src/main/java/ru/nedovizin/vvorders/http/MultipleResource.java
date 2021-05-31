@@ -5,6 +5,7 @@ import java.util.List;
 
 import ru.nedovizin.vvorders.models.Address;
 import ru.nedovizin.vvorders.models.Contragent;
+import ru.nedovizin.vvorders.models.Product;
 
 public class MultipleResource {
     @SerializedName("status")
@@ -16,9 +17,11 @@ public class MultipleResource {
 
     public class Answer {
         @SerializedName("Контрагенты")
-        public List<Contragent> contragents = null;
+        public List<Contragent> mContragents = null;
         @SerializedName("АдресаДоставки")
         public List<Address> mAddresses = null;
+        @SerializedName("Номенклатура")
+        public List<Product> mProducts = null;
     }
 }
 
