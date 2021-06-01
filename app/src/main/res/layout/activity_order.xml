@@ -71,12 +71,13 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"></TableLayout>
 
-    <EditText
+    <ru.nedovizin.vvorders.DelayAutoCompleteTextView
         android:id="@+id/product_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#D1EAF3"
         android:textSize="36sp"
+        android:nextFocusLeft="@id/address"
         tools:text="зав сл клуб 2" />
 
     <TableLayout

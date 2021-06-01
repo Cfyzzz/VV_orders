@@ -4,9 +4,11 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import ru.nedovizin.vvorders.database.AddressCursorWrapper;
@@ -16,6 +18,7 @@ import ru.nedovizin.vvorders.database.ClientDbSchema;
 import ru.nedovizin.vvorders.database.ClientDbSchema.ClientTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.AddressTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.ProductTable;
+import ru.nedovizin.vvorders.database.ProductCursorWrapper;
 
 public class ClientLab {
 
@@ -128,20 +131,31 @@ public class ClientLab {
         return new AddressCursorWrapper(cursor);
     }
 
+    private ProductCursorWrapper queryProducts(String whereClause, String[] whereArgs) {
+        Cursor cursor = mDatabase.query(
+                ProductTable.NAME,
+                null,
+                whereClause,
+                whereArgs,
+                null,
+                null,
+                null
+        );
+        return new ProductCursorWrapper(cursor);
+    }
+
     public List<Address> getAddressesByLikeName(String word) {
         List<Address> addresses = new ArrayList<>();
         Log.d(TAG, "current client: " + getCurrentClient());
         try (AddressCursorWrapper cursor = queryAddresses(AddressTable.Cols.NAME +
                 " LIKE \'%" + word + "%\' AND " +
                 AddressTable.Cols.CODE + "=\'" + getCurrentClient().code + "\'", null)) {
-            Log.d(TAG, "Entry in cycle...");
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
                 addresses.add(cursor.getAddress());
                 cursor.moveToNext();
             }
         }
-        Log.d(TAG, "count adresses: " + addresses.size());
         return addresses;
     }
 
@@ -161,6 +175,29 @@ public class ClientLab {
         }
         Log.d(TAG, "count adresses: " + addresses.size());
         return addresses;
+    }
+
+    public List<Product> getProductsByLikeWords(String word) {
+        String[] words = word.trim().split(" ");
+        for (int i = 0; i < words.length; i++) {
+            words[i] = words[i] + "%";
+        }
+        word = TextUtils.join(" ", words);
+        List<Product> products = new ArrayList<>();
+        Log.d(TAG, "input words: " + word);
+        try (ProductCursorWrapper cursor = queryProducts (
+                ProductTable.Cols.NAME + " LIKE \'" + word + "\'",
+                null
+            )
+        ) {
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                products.add(cursor.getProduct());
+                cursor.moveToNext();
+            }
+        }
+        Log.d(TAG, "count products: " + products.size());
+        return products;
     }
 
     private static ContentValues getClientValues(Contragent client) {

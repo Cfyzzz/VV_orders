@@ -3,7 +3,6 @@ package ru.nedovizin.vvorders.ui;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 
 import java.util.List;
@@ -11,10 +10,12 @@ import java.util.List;
 import ru.nedovizin.vvorders.AddressAutoCompleteAdapter;
 import ru.nedovizin.vvorders.ClientAutoCompleteAdapter;
 import ru.nedovizin.vvorders.DelayAutoCompleteTextView;
+import ru.nedovizin.vvorders.ProductAutoCompleteAdapter;
 import ru.nedovizin.vvorders.R;
 import ru.nedovizin.vvorders.models.Address;
 import ru.nedovizin.vvorders.models.ClientLab;
 import ru.nedovizin.vvorders.models.Contragent;
+import ru.nedovizin.vvorders.models.Product;
 
 public class OrderActivity extends MenuActivity {
 
@@ -29,7 +30,7 @@ public class OrderActivity extends MenuActivity {
 
         DelayAutoCompleteTextView addressTitle = (DelayAutoCompleteTextView) findViewById(R.id.address);
         DelayAutoCompleteTextView clientTitle = (DelayAutoCompleteTextView) findViewById(R.id.client);
-        EditText productInput = findViewById(R.id.product_input);
+        DelayAutoCompleteTextView productTitle = (DelayAutoCompleteTextView) findViewById(R.id.product_input);
 
         clientTitle.setThreshold(4);
         clientTitle.setAdapter(new ClientAutoCompleteAdapter(getBaseContext()));
@@ -44,7 +45,7 @@ public class OrderActivity extends MenuActivity {
                 List<Address> addresses = mClientLab.getAddressesByClient(client);
                 if (addresses.size() == 1) {
                     addressTitle.setText(addresses.get(0).name);
-                    productInput.requestFocus();
+                    productTitle.requestFocus();
                 } else {
                     addressTitle.setText(" ");
                 }
@@ -58,7 +59,17 @@ public class OrderActivity extends MenuActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 Address address = (Address) adapterView.getItemAtPosition(position);
                 addressTitle.setText(address.name);
-                productInput.requestFocus();
+                productTitle.requestFocus();
+            }
+        });
+
+        productTitle.setThreshold(8);
+        productTitle.setAdapter(new ProductAutoCompleteAdapter(getBaseContext()));
+        productTitle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                Product product = (Product) adapterView.getItemAtPosition(position);
+                productTitle.setText(product.name);
             }
         });
     }
