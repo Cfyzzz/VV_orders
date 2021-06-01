@@ -24,8 +24,17 @@
         android:id="@+id/col3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0"
+        android:layout_weight="1"
         android:gravity="left"
+        android:text=""
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/col4"
+        android:layout_width="32dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:gravity="right"
         android:text=""
         android:textSize="24sp" />
 

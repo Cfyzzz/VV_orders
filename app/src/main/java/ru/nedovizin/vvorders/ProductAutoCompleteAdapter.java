@@ -25,11 +25,11 @@ import ru.nedovizin.vvorders.models.Product;
 public class ProductAutoCompleteAdapter extends BaseAdapter implements Filterable {
 
     private final Context mContext;
-    private List<Product> mResults;
+    private List<ProductItem> mResults;
 
     public ProductAutoCompleteAdapter(Context context) {
         mContext = context;
-        mResults = new ArrayList<Product>();
+        mResults = new ArrayList<ProductItem>();
     }
 
     @Override
@@ -38,7 +38,7 @@ public class ProductAutoCompleteAdapter extends BaseAdapter implements Filterabl
     }
 
     @Override
-    public Product getItem(int index) {
+    public ProductItem getItem(int index) {
         return mResults.get(index);
     }
 
@@ -53,7 +53,8 @@ public class ProductAutoCompleteAdapter extends BaseAdapter implements Filterabl
             LayoutInflater inflater = LayoutInflater.from(mContext);
             convertView = inflater.inflate(R.layout.table_row, parent, false);
         }
-        Product product = getItem(position);
+        ProductItem productItem = getItem(position);
+        Product product = productItem.product;
         TextView tv = convertView.findViewById(R.id.col3);
         tv.setText(product.name);
         return convertView;
@@ -66,10 +67,10 @@ public class ProductAutoCompleteAdapter extends BaseAdapter implements Filterabl
             protected FilterResults performFiltering(CharSequence constraint) {
                 FilterResults filterResults = new FilterResults();
                 if (constraint != null) {
-                    List<Product> products = findProducts(constraint.toString());
+                    List<ProductItem> productItems = findProducts(constraint.toString());
                     // Assign the data to the FilterResults
-                    filterResults.values = products;
-                    filterResults.count = products.size();
+                    filterResults.values = productItems;
+                    filterResults.count = productItems.size();
                 }
                 return filterResults;
             }
@@ -77,7 +78,7 @@ public class ProductAutoCompleteAdapter extends BaseAdapter implements Filterabl
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
                 if (results != null && results.count > 0) {
-                    mResults = (List<Product>) results.values;
+                    mResults = (List<ProductItem>) results.values;
                     notifyDataSetChanged();
                 } else {
                     notifyDataSetInvalidated();
@@ -87,19 +88,29 @@ public class ProductAutoCompleteAdapter extends BaseAdapter implements Filterabl
         return filter;
     }
 
-    private List<Product> findProducts(String productTitle) {
+    private List<ProductItem> findProducts(String productTitle) {
         List<Product> products = new ArrayList<>();
+        List<ProductItem> productItems = new ArrayList<>();
         ClientLab clietnLab = ClientLab.get(mContext);
+        String quantity = "1";
 
-        String product = productTitle.trim();
+        String product = productTitle.trim()
+                .toLowerCase()
+                .replace(" м ", " ( ");
         String[] words = product.split(" ");
         int idxEndWord = words.length - 1;
         if (idxEndWord > 0 && words[idxEndWord].matches("\\d*")) {
             // Если последнее слово - число и оно не первое
+            quantity = words[idxEndWord];
             words = Arrays.copyOfRange(words, 0, idxEndWord);
             product = TextUtils.join(" ", words);
             products = clietnLab.getProductsByLikeWords(product);
         }
-        return products;
+        for (Product prod : products) {
+            ProductItem prodItem = new ProductItem(prod);
+            prodItem.quantity = quantity;
+            productItems.add(prodItem);
+        }
+        return productItems;
     }
 }

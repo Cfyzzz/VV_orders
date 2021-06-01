@@ -139,7 +139,7 @@ public class ClientLab {
                 whereArgs,
                 null,
                 null,
-                null
+                "length(name) asc"
         );
         return new ProductCursorWrapper(cursor);
     }
@@ -180,9 +180,9 @@ public class ClientLab {
     public List<Product> getProductsByLikeWords(String word) {
         String[] words = word.trim().split(" ");
         for (int i = 0; i < words.length; i++) {
-            words[i] = words[i] + "%";
+            words[i] = "%" + words[i] + "%";
         }
-        word = TextUtils.join(" ", words);
+        word = TextUtils.join("", words);
         List<Product> products = new ArrayList<>();
         Log.d(TAG, "input words: " + word);
         try (ProductCursorWrapper cursor = queryProducts (
@@ -191,9 +191,12 @@ public class ClientLab {
             )
         ) {
             cursor.moveToFirst();
+            int count = 0;
             while (!cursor.isAfterLast()) {
                 products.add(cursor.getProduct());
                 cursor.moveToNext();
+                count++;
+                if (count > 2) break;
             }
         }
         Log.d(TAG, "count products: " + products.size());
