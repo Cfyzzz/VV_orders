@@ -6,6 +6,7 @@ public class ClientDbSchema {
         public static final class Cols {
             public static final String CODE = "code";
             public static final String NAME = "name";
+            public static final String ACTIVITY = "activity";
         }
     }
 
@@ -14,6 +15,7 @@ public class ClientDbSchema {
         public static final class Cols {
             public static final String CODE = "code";
             public static final String NAME = "name";
+            public static final String ACTIVITY = "activity";
         }
     }
 
@@ -23,6 +25,7 @@ public class ClientDbSchema {
             public static final String CODE = "code";
             public static final String NAME = "name";
             public static final String WEIGHT = "weight";
+            public static final String ACTIVITY = "activity";
         }
     }
 }

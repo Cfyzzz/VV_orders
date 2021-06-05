@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,6 +28,7 @@ public class ClientLab {
     private Context mContext;
     private SQLiteDatabase mDatabase;
     private String TAG = ".ClientLab";
+    private Contragent mCurrentClient;
 
     public Contragent getCurrentClient() {
         return mCurrentClient;
@@ -34,8 +37,6 @@ public class ClientLab {
     public void setCurrentClient(Contragent currentClient) {
         mCurrentClient = currentClient;
     }
-
-    private Contragent mCurrentClient;
 
     public static ClientLab get(Context context) {
         if (sClientLab == null) {
@@ -67,7 +68,8 @@ public class ClientLab {
 
     public List<Contragent> getClientsByLikeName(String word) {
         List<Contragent> clients = new ArrayList<>();
-        try (ClientCursorWrapper cursor = queryClients(ClientTable.Cols.NAME + " LIKE \'%" + word + "%\'", null)) {
+        try (ClientCursorWrapper cursor = queryClients(ClientTable.Cols.NAME + " LIKE \'%" + word + "%\'" +
+                " AND " + ClientTable.Cols.ACTIVITY + "=\'true\'", null)) {
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
                 clients.add(cursor.getClient());
@@ -79,9 +81,10 @@ public class ClientLab {
 
     public List<Contragent> getClients() {
         List<Contragent> client = new ArrayList<>();
-        try (ClientCursorWrapper cursor = queryClients(null, null)) {
+        try (ClientCursorWrapper cursor = queryClients(ClientTable.Cols.ACTIVITY + "=\'true\'", null)) {
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
+                Log.d(TAG, "Client.acivity = " + cursor.getClient().activity);
                 client.add(cursor.getClient());
                 cursor.moveToNext();
             }
@@ -103,6 +106,24 @@ public class ClientLab {
         String code = client.code;
         ContentValues values = getClientValues(client);
         mDatabase.update(ClientTable.NAME, values, ClientTable.Cols.CODE + " = ?", new String[]{code});
+    }
+
+    public void updateActivityToFalseAllClients() {
+        ContentValues values = new ContentValues();
+        values.put(ClientTable.Cols.ACTIVITY, "false");
+        mDatabase.update(ClientTable.NAME, values,null, null);
+    }
+
+    public void updateActivityToFalseAllProducts() {
+        ContentValues values = new ContentValues();
+        values.put(ProductTable.Cols.ACTIVITY, "false");
+        mDatabase.update(ProductTable.NAME, values,null, null);
+    }
+
+    public void updateActivityToFalseAllAddresses() {
+        ContentValues values = new ContentValues();
+        values.put(AddressTable.Cols.ACTIVITY, "false");
+        mDatabase.update(AddressTable.NAME, values,null, null);
     }
 
     private ClientCursorWrapper queryClients(String whereClause, String[] whereArgs) {
@@ -149,9 +170,11 @@ public class ClientLab {
         Log.d(TAG, "current client: " + getCurrentClient());
         try (AddressCursorWrapper cursor = queryAddresses(AddressTable.Cols.NAME +
                 " LIKE \'%" + word + "%\' AND " +
-                AddressTable.Cols.CODE + "=\'" + getCurrentClient().code + "\'", null)) {
+                AddressTable.Cols.CODE + "=\'" + getCurrentClient().code + "\'" +
+                " AND " + AddressTable.Cols.ACTIVITY + "=\'true\'", null)) {
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
+                Log.d(TAG, "Address.acivity = " + cursor.getAddress().activity);
                 addresses.add(cursor.getAddress());
                 cursor.moveToNext();
             }
@@ -163,12 +186,14 @@ public class ClientLab {
         List<Address> addresses = new ArrayList<>();
         Log.d(TAG, "current client: " + getCurrentClient());
         try (AddressCursorWrapper cursor = queryAddresses(
-                AddressTable.Cols.CODE + "=\'" + client.code + "\'",
+                AddressTable.Cols.CODE + "=\'" + client.code + "\'" +
+                        " AND " + AddressTable.Cols.ACTIVITY + "=\'true\'",
                 null)
         ) {
             Log.d(TAG, "Entry in cycle...");
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
+                Log.d(TAG, "Address.acivity = " + cursor.getAddress().activity);
                 addresses.add(cursor.getAddress());
                 cursor.moveToNext();
             }
@@ -186,13 +211,15 @@ public class ClientLab {
         List<Product> products = new ArrayList<>();
         Log.d(TAG, "input words: " + word);
         try (ProductCursorWrapper cursor = queryProducts (
-                ProductTable.Cols.NAME + " LIKE \'" + word + "\'",
+                ProductTable.Cols.NAME + " LIKE \'" + word + "\'" +
+                        " AND " + ProductTable.Cols.ACTIVITY + "=\'true\'",
                 null
             )
         ) {
             cursor.moveToFirst();
             int count = 0;
             while (!cursor.isAfterLast()) {
+                Log.d(TAG, "Product.acivity = " + cursor.getProduct().activity);
                 products.add(cursor.getProduct());
                 cursor.moveToNext();
                 count++;
@@ -205,23 +232,29 @@ public class ClientLab {
 
     private static ContentValues getClientValues(Contragent client) {
         ContentValues values = new ContentValues();
+        client.activity = "true";
         values.put(ClientTable.Cols.NAME, client.name);
         values.put(ClientTable.Cols.CODE, client.code);
+        values.put(ClientTable.Cols.ACTIVITY, client.activity);
         return values;
     }
 
     private static ContentValues getAddressValues(Address address) {
         ContentValues values = new ContentValues();
+        address.activity = "true";
         values.put(AddressTable.Cols.NAME, address.name);
         values.put(AddressTable.Cols.CODE, address.code);
+        values.put(AddressTable.Cols.ACTIVITY, address.activity);
         return values;
     }
 
     private static ContentValues getProductValues(Product product) {
         ContentValues values = new ContentValues();
+        product.activity = "true";
         values.put(ProductTable.Cols.NAME, product.name);
         values.put(ProductTable.Cols.CODE, product.code);
         values.put(ProductTable.Cols.WEIGHT, product.weight);
+        values.put(ProductTable.Cols.ACTIVITY, product.activity);
         return values;
     }
 }

@@ -21,18 +21,21 @@ public class ClientBaseHelper extends SQLiteOpenHelper {
         db.execSQL("create table " + ClientTable.NAME + "(" +
                 ClientTable.Cols.CODE + ", " +
                 ClientTable.Cols.NAME + ", " +
-                " unique(code) ON CONFLICT ignore)"
+                ClientTable.Cols.ACTIVITY + ", " +
+                " unique(code) ON CONFLICT replace)"
         );
         db.execSQL("create table " + AddressTable.NAME + "(" +
                 AddressTable.Cols.CODE + ", " +
                 AddressTable.Cols.NAME + ", " +
+                AddressTable.Cols.ACTIVITY + ", " +
                 "unique(code, name) ON CONFLICT replace)"
         );
         db.execSQL("create table " + ProductTable.NAME + "(" +
                 ProductTable.Cols.CODE + ", " +
                 ProductTable.Cols.NAME + ", " +
                 ProductTable.Cols.WEIGHT + ", " +
-                " unique(code) ON CONFLICT ignore)"
+                ProductTable.Cols.ACTIVITY + ", " +
+                " unique(code) ON CONFLICT replace)"
         );
     }
 

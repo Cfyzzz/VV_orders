@@ -127,18 +127,21 @@ public class SettingsActivity extends AppCompatActivity {
                         ClientLab clietnLab = ClientLab.get(getBaseContext());
 
                         if (mContragents != null) {
+                            clietnLab.updateActivityToFalseAllClients();
                             for (Contragent contragent : mContragents) {
                                 clietnLab.addClient(contragent);
                             }
                         }
 
                         if (mAdresses != null) {
+                            clietnLab.updateActivityToFalseAllAddresses();
                             for (Address address : mAdresses) {
                                 clietnLab.addAddress(address);
                             }
                         }
 
                         if (mProduct != null) {
+                            clietnLab.updateActivityToFalseAllProducts();
                             for (Product product : mProduct) {
                                 clietnLab.addProduct(product);
                             }

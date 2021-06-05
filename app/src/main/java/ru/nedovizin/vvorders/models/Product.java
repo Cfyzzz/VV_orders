@@ -9,4 +9,6 @@ public class Product {
     public String code;
     @SerializedName("Вес")
     public String weight;
+    @SerializedName("Активность")
+    public String activity;
 }

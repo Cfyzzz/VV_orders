@@ -7,4 +7,6 @@ public class Contragent {
     public String name;
     @SerializedName("Код")
     public String code;
+    @SerializedName("Активность")
+    public String activity;
 }
