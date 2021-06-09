@@ -1,4 +1,4 @@
-package ru.nedovizin.vvorders;
+package ru.nedovizin.vvorders.archive;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import ru.nedovizin.vvorders.R;
 import ru.nedovizin.vvorders.models.Contragent;
 
 public class ClientsListAdapter extends BaseAdapter {

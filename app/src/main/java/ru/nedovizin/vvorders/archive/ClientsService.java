@@ -1,4 +1,4 @@
-package ru.nedovizin.vvorders;
+package ru.nedovizin.vvorders.archive;
 
 import android.app.Service;
 import android.content.Context;

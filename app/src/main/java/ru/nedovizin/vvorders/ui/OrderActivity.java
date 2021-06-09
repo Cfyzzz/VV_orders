@@ -1,5 +1,6 @@
 package ru.nedovizin.vvorders.ui;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,8 +10,12 @@ import android.widget.AdapterView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +37,7 @@ public class OrderActivity extends MenuActivity {
     private RecyclerView mProductReclerView;
     private ProductListAdapter mAdapter;
     private List<ProductItem> mProducts;
+    private View mOrderActivityBase;
     private final String ARG_PRODUCT_POSITION = "ru.nedovizin.criminalintent.CrimeListFragment.ARG_PRODUCT_POSITION";
     private final String TAG = ".OrderActivity";
 
@@ -40,6 +46,7 @@ public class OrderActivity extends MenuActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order);
 
+        mOrderActivityBase = findViewById(R.id.order_activity_base);
         mProductReclerView = findViewById(R.id.table_products);
         mProductReclerView.setLayoutManager(new LinearLayoutManager(this));
         mClientLab = ClientLab.get(getBaseContext());
@@ -106,11 +113,42 @@ public class OrderActivity extends MenuActivity {
             Log.d(TAG, "updateUI mAdapter == null");
             mAdapter = new ProductListAdapter(mProducts);
             mProductReclerView.setAdapter(mAdapter);
+            enableSwipeToDeleteAndUndo();
         } else {
             Log.d(TAG, "updateUI mAdapter != null");
             mAdapter.notifyDataSetChanged();
         }
         Log.d(TAG, "quantity products: " + Integer.toString(mProducts.size()));
+    }
+
+    private void enableSwipeToDeleteAndUndo() {
+        SwipeToDeleteCallback swipeToDeleteCallback = new SwipeToDeleteCallback(this) {
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
+
+                final int position = viewHolder.getAdapterPosition();
+                final ProductItem item = mAdapter.getData().get(position);
+
+                mAdapter.removeItem(position);
+
+                Snackbar snackbar = Snackbar
+                        .make(mOrderActivityBase, "Элемент был удалён из списка.", Snackbar.LENGTH_LONG);
+                snackbar.setAction("ОТМЕНА", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mAdapter.restoreItem(item, position);
+                        mProductReclerView.scrollToPosition(position);
+                    }
+                });
+
+                snackbar.setActionTextColor(Color.YELLOW);
+                snackbar.show();
+
+            }
+        };
+
+        ItemTouchHelper itemTouchhelper = new ItemTouchHelper(swipeToDeleteCallback);
+        itemTouchhelper.attachToRecyclerView(mProductReclerView);
     }
 
     private class ProductHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -164,6 +202,20 @@ public class OrderActivity extends MenuActivity {
         @Override
         public int getItemCount() {
             return data.size();
+        }
+
+        public void removeItem(int position) {
+            data.remove(position);
+            notifyItemRemoved(position);
+        }
+
+        public void restoreItem(ProductItem item, int position) {
+            data.add(position, item);
+            notifyItemInserted(position);
+        }
+
+        public List<ProductItem> getData() {
+            return data;
         }
     }
 }

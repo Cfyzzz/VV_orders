@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".ui.OrderActivity"
-    android:layout_margin="8dp">
+    android:layout_margin="8dp"
+    android:id="@+id/order_activity_base">
 
     <LinearLayout
         android:layout_width="match_parent"
