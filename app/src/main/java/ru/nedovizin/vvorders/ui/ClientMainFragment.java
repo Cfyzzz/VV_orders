@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,6 +28,9 @@ public class ClientMainFragment extends Fragment {
 
     private Button send_button;
     private List<Contragent> clients;
+
+    public static final int REQUEST_ORDER = 0;
+    public static final String DIALOG_ORDER = "DialogOrder";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,6 +55,12 @@ public class ClientMainFragment extends Fragment {
             public void onClick(View v) {
                 Intent intent = new Intent(getContext(), OrderActivity.class);
                 startActivity(intent);
+                // TODO - Попытка открыть во фрагменте новую заявку
+//                FragmentManager manager = getFragmentManager();
+//                OrderFragment order = OrderFragment.newInstance();
+//                order.setTargetFragment(ClientMainFragment.this, REQUEST_ORDER);
+//                Intent intent = new Intent();
+//                startActivity(order.getActivity().getIntent());
             }
         });
 

@@ -1,6 +1,5 @@
 package ru.nedovizin.vvorders.ui;
 
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,12 +7,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -22,6 +21,8 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.zip.Inflater;
 
 import ru.nedovizin.vvorders.AddressAutoCompleteAdapter;
 import ru.nedovizin.vvorders.ClientAutoCompleteAdapter;
@@ -32,38 +33,45 @@ import ru.nedovizin.vvorders.R;
 import ru.nedovizin.vvorders.models.Address;
 import ru.nedovizin.vvorders.models.ClientLab;
 import ru.nedovizin.vvorders.models.Contragent;
-import ru.nedovizin.vvorders.models.Product;
 
-public class OrderActivity extends MenuActivity {
-
+public class OrderFragment extends Fragment {
     private ClientLab mClientLab;
     private RecyclerView mProductReclerView;
-    private ProductListAdapter mAdapter;
+    private OrderFragment.ProductListAdapter mAdapter;
     private List<ProductItem> mProducts;
     private View mOrderActivityBase;
     private final String ARG_PRODUCT_POSITION = "ru.nedovizin.criminalintent.CrimeListFragment.ARG_PRODUCT_POSITION";
     private final String TAG = ".OrderActivity";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_order);
+    }
 
-        mOrderActivityBase = findViewById(R.id.order_activity_base);
-        mProductReclerView = findViewById(R.id.table_products);
-        mProductReclerView.setLayoutManager(new LinearLayoutManager(this));
-        mClientLab = ClientLab.get(getBaseContext());
+    public static  OrderFragment newInstance() {
+        OrderFragment fragment = new OrderFragment();
+        return fragment;
+    }
 
-        DelayAutoCompleteTextView addressTitle = (DelayAutoCompleteTextView) findViewById(R.id.address);
-        DelayAutoCompleteTextView clientTitle = (DelayAutoCompleteTextView) findViewById(R.id.client);
-        DelayAutoCompleteTextView productTitle = (DelayAutoCompleteTextView) findViewById(R.id.product_input);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.activity_order, container, false);
+
+        mOrderActivityBase = view.findViewById(R.id.order_activity_base);
+        mProductReclerView = view.findViewById(R.id.table_products);
+        mProductReclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mClientLab = ClientLab.get(getActivity());
+
+        DelayAutoCompleteTextView addressTitle = (DelayAutoCompleteTextView) view.findViewById(R.id.address);
+        DelayAutoCompleteTextView clientTitle = (DelayAutoCompleteTextView) view.findViewById(R.id.client);
+        DelayAutoCompleteTextView productTitle = (DelayAutoCompleteTextView) view.findViewById(R.id.product_input);
 
         mProducts = new ArrayList<>();
         updateUI();
 
         clientTitle.setThreshold(4);
-        clientTitle.setAdapter(new ClientAutoCompleteAdapter(getBaseContext()));
-        clientTitle.setLoadingIndicator((ProgressBar) findViewById(R.id.progress_bar));
+        clientTitle.setAdapter(new ClientAutoCompleteAdapter(getActivity()));
+        clientTitle.setLoadingIndicator((ProgressBar) view.findViewById(R.id.progress_bar));
         clientTitle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
@@ -82,7 +90,7 @@ public class OrderActivity extends MenuActivity {
         });
 
         addressTitle.setThreshold(1);
-        addressTitle.setAdapter(new AddressAutoCompleteAdapter(getBaseContext()));
+        addressTitle.setAdapter(new AddressAutoCompleteAdapter(getContext()));
         addressTitle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
@@ -93,7 +101,7 @@ public class OrderActivity extends MenuActivity {
         });
 
         productTitle.setThreshold(5);
-        productTitle.setAdapter(new ProductAutoCompleteAdapter(getBaseContext()));
+        productTitle.setAdapter(new ProductAutoCompleteAdapter(getContext()));
         productTitle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
@@ -103,10 +111,12 @@ public class OrderActivity extends MenuActivity {
                 updateUI();
             }
         });
+
+        return view;
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
         updateUI();
     }
@@ -114,7 +124,7 @@ public class OrderActivity extends MenuActivity {
     private void updateUI() {
         if (mAdapter == null) {
             Log.d(TAG, "updateUI mAdapter == null");
-            mAdapter = new ProductListAdapter(mProducts);
+            mAdapter = new OrderFragment.ProductListAdapter(mProducts);
             mProductReclerView.setAdapter(mAdapter);
             enableSwipeToDeleteAndUndo();
         } else {
@@ -125,7 +135,7 @@ public class OrderActivity extends MenuActivity {
     }
 
     private void enableSwipeToDeleteAndUndo() {
-        SwipeToDeleteCallback swipeToDeleteCallback = new SwipeToDeleteCallback(this) {
+        SwipeToDeleteCallback swipeToDeleteCallback = new SwipeToDeleteCallback(getContext()) {
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
 
@@ -176,50 +186,11 @@ public class OrderActivity extends MenuActivity {
 
         @Override
         public void onClick(View v) {
-            // Реакция на клик по строке номенклатуры в заявке
-
-            //Получаем вид с файла prompt.xml, который применим для диалогового окна:
-            LayoutInflater li = LayoutInflater.from(OrderActivity.this);
-            View promptsView = li.inflate(R.layout.prompt, null);
-
-            //Создаем AlertDialog
-            AlertDialog.Builder mDialogBuilder = new AlertDialog.Builder(OrderActivity.this);
-
-            //Настраиваем prompt.xml для нашего AlertDialog:
-            mDialogBuilder.setView(promptsView);
-
-            //Настраиваем отображение поля для ввода текста в открытом диалоге:
-            final EditText userInput = (EditText) promptsView.findViewById(R.id.input_text);
-            userInput.setText(mProduct.quantity);
-//            userInput.setSelection(0, mProduct.quantity.length());
-
-            //Настраиваем сообщение в диалоговом окне:
-            mDialogBuilder
-                    .setCancelable(false)
-                    .setPositiveButton("OK",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog,int id) {
-                                    //Вводим текст и отображаем в строке ввода на основном экране:
-                                    mProduct.quantity = userInput.getText().toString();
-                                    updateUI();
-                                }
-                            })
-                    .setNegativeButton("Отмена",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog,int id) {
-                                    dialog.cancel();
-                                }
-                            });
-
-            //Создаем AlertDialog:
-            AlertDialog alertDialog = mDialogBuilder.create();
-
-            //и отображаем его:
-            alertDialog.show();
+            // TODO - Реакция на клик по строке номенклатуры в заявке
         }
     }
 
-    private class ProductListAdapter extends RecyclerView.Adapter<ProductHolder> {
+    private class ProductListAdapter extends RecyclerView.Adapter<OrderFragment.ProductHolder> {
 
         List<ProductItem> data;
 
@@ -228,15 +199,15 @@ public class OrderActivity extends MenuActivity {
         }
 
         @Override
-        public ProductHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public OrderFragment.ProductHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View itemView;
             itemView = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.table_row, parent, false);
-            return new ProductHolder(itemView);
+            return new OrderFragment.ProductHolder(itemView);
         }
 
         @Override
-        public void onBindViewHolder(OrderActivity.ProductHolder holder, int position) {
+        public void onBindViewHolder(OrderFragment.ProductHolder holder, int position) {
             ProductItem product = data.get(position);
             holder.bind(product, position);
         }

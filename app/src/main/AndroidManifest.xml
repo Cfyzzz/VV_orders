@@ -17,7 +17,7 @@
 
         <activity android:name=".ui.MenuActivity" />
         <activity
-            android:name=".ui.ListActivity"
+            android:name=".archive.ListActivity"
             android:parentActivityName=".ui.SettingsActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
