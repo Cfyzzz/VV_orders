@@ -7,9 +7,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import ru.nedovizin.vvorders.database.ClientDbSchema.AddressTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.ClientTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.ProductTable;
+import ru.nedovizin.vvorders.database.ClientDbSchema.OrderTable;
 
 public class ClientBaseHelper extends SQLiteOpenHelper {
-    public static final int VERSION = 1;
+    public static final int VERSION = 3;
     public static final String DTABASE_NAME = "clientBase.db";
 
     public ClientBaseHelper(Context context) {
@@ -37,9 +38,28 @@ public class ClientBaseHelper extends SQLiteOpenHelper {
                 ProductTable.Cols.ACTIVITY + ", " +
                 " unique(code) ON CONFLICT replace)"
         );
+        db.execSQL("create table " + OrderTable.Cols.Products.NAME + "(" +
+                OrderTable.Cols.Products.CODE + ", " +
+                OrderTable.Cols.Products.PRODUCT + ", " +
+                OrderTable.Cols.Products.QUANTITY +
+                ")"
+        );
+        db.execSQL("create table " + OrderTable.NAME + "(" +
+                OrderTable.Cols.CODE + ", " +
+                OrderTable.Cols.DATE + ", " +
+                OrderTable.Cols.CLIENT + ", " +
+                OrderTable.Cols.ACTIVITY + ", " +
+                " unique(code) ON CONFLICT replace)"
+        );
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("create table " + OrderTable.Cols.Products.NAME + "(" +
+                OrderTable.Cols.Products.CODE + ", " +
+                OrderTable.Cols.Products.PRODUCT + ", " +
+                OrderTable.Cols.Products.QUANTITY +
+                ")"
+        );
     }
 }

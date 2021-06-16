@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import ru.nedovizin.vvorders.ProductItem;
 import ru.nedovizin.vvorders.database.AddressCursorWrapper;
 import ru.nedovizin.vvorders.database.ClientBaseHelper;
 import ru.nedovizin.vvorders.database.ClientCursorWrapper;
@@ -20,6 +21,7 @@ import ru.nedovizin.vvorders.database.ClientDbSchema;
 import ru.nedovizin.vvorders.database.ClientDbSchema.ClientTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.AddressTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.ProductTable;
+import ru.nedovizin.vvorders.database.ClientDbSchema.OrderTable;
 import ru.nedovizin.vvorders.database.ProductCursorWrapper;
 
 public class ClientLab {
@@ -64,6 +66,16 @@ public class ClientLab {
     public void addProduct(Product product) {
         ContentValues values = getProductValues(product);
         mDatabase.insert(ProductTable.NAME, null, values);
+    }
+
+    public void addOrder(Order order, List<ProductItem> productItems) {
+        ContentValues values = getOrderValues(order);
+        mDatabase.insert(OrderTable.NAME, null, values);
+
+        for (ProductItem item: productItems) {
+            ContentValues itemValuesalues = getOrderProductItemsValues(order.code, item);
+            mDatabase.insert(OrderTable.Cols.Products.NAME, null, itemValuesalues);
+        }
     }
 
     public List<Contragent> getClientsByLikeName(String word) {
@@ -255,6 +267,24 @@ public class ClientLab {
         values.put(ProductTable.Cols.CODE, product.code);
         values.put(ProductTable.Cols.WEIGHT, product.weight);
         values.put(ProductTable.Cols.ACTIVITY, product.activity);
+        return values;
+    }
+
+    private static ContentValues getOrderValues(Order order) {
+        ContentValues values = new ContentValues();
+        order.activity = "true";
+        values.put(OrderTable.Cols.CODE, order.code);
+        values.put(OrderTable.Cols.CLIENT, order.client);
+        values.put(OrderTable.Cols.DATE, order.date);
+        values.put(OrderTable.Cols.ACTIVITY, order.activity);
+        return values;
+    }
+
+    private static ContentValues getOrderProductItemsValues(String code, ProductItem productItem) {
+        ContentValues values = new ContentValues();
+        values.put(OrderTable.Cols.Products.CODE, code);
+        values.put(OrderTable.Cols.Products.PRODUCT, productItem.product.name);
+        values.put(OrderTable.Cols.Products.QUANTITY, productItem.quantity);
         return values;
     }
 }

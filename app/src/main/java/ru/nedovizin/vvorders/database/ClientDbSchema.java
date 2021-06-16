@@ -28,4 +28,20 @@ public class ClientDbSchema {
             public static final String ACTIVITY = "activity";
         }
     }
+
+    public static final class OrderTable {
+        public static final String NAME = "orders";
+        public static final class Cols {
+            public static final String CODE = "code";
+            public static final String DATE = "date";
+            public static final String ACTIVITY = "activity";
+            public static final String CLIENT = "client_name";
+            public static final class Products {
+                public static final String NAME = "order_products";
+                public static final String CODE = "code_order";
+                public static final String PRODUCT = "product_name";
+                public static final String QUANTITY = "quantity";
+            }
+        }
+    }
 }

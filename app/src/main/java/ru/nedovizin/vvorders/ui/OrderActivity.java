@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -21,7 +22,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import ru.nedovizin.vvorders.AddressAutoCompleteAdapter;
 import ru.nedovizin.vvorders.ClientAutoCompleteAdapter;
@@ -29,9 +32,11 @@ import ru.nedovizin.vvorders.DelayAutoCompleteTextView;
 import ru.nedovizin.vvorders.ProductAutoCompleteAdapter;
 import ru.nedovizin.vvorders.ProductItem;
 import ru.nedovizin.vvorders.R;
+import ru.nedovizin.vvorders.database.ClientDbSchema;
 import ru.nedovizin.vvorders.models.Address;
 import ru.nedovizin.vvorders.models.ClientLab;
 import ru.nedovizin.vvorders.models.Contragent;
+import ru.nedovizin.vvorders.models.Order;
 import ru.nedovizin.vvorders.models.Product;
 
 public class OrderActivity extends MenuActivity {
@@ -41,6 +46,7 @@ public class OrderActivity extends MenuActivity {
     private ProductListAdapter mAdapter;
     private List<ProductItem> mProducts;
     private View mOrderActivityBase;
+    private Button mSaveOrderButton;
     private final String ARG_PRODUCT_POSITION = "ru.nedovizin.criminalintent.CrimeListFragment.ARG_PRODUCT_POSITION";
     private final String TAG = ".OrderActivity";
 
@@ -53,6 +59,7 @@ public class OrderActivity extends MenuActivity {
         mProductReclerView = findViewById(R.id.table_products);
         mProductReclerView.setLayoutManager(new LinearLayoutManager(this));
         mClientLab = ClientLab.get(getBaseContext());
+        mSaveOrderButton = findViewById(R.id.save_order_button);
 
         DelayAutoCompleteTextView addressTitle = (DelayAutoCompleteTextView) findViewById(R.id.address);
         DelayAutoCompleteTextView clientTitle = (DelayAutoCompleteTextView) findViewById(R.id.client);
@@ -60,6 +67,18 @@ public class OrderActivity extends MenuActivity {
 
         mProducts = new ArrayList<>();
         updateUI();
+
+        mSaveOrderButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Order order = new Order();
+                order.client = clientTitle.toString();
+                // TODO - Взять дату из установок
+                order.date = new Date().toString();
+                order.code = Integer.toString(order.client.hashCode() + order.date.hashCode());
+                mClientLab.addOrder(order, mProducts);
+            }
+        });
 
         clientTitle.setThreshold(4);
         clientTitle.setAdapter(new ClientAutoCompleteAdapter(getBaseContext()));
