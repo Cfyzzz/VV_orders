@@ -1,7 +1,10 @@
 package ru.nedovizin.vvorders.ui;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,11 +14,15 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import ru.nedovizin.vvorders.R;
@@ -27,10 +34,13 @@ public class ClientMainFragment extends Fragment {
     private ClientsListAdapter mAdapter;
 
     private Button send_button;
+    private Button date_button;
     private List<Contragent> clients;
 
     public static final int REQUEST_ORDER = 0;
     public static final String DIALOG_ORDER = "DialogOrder";
+    public static final String DIALOG_DATE = "DialogDate";
+    public static final int REQUEST_DATE = 0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -42,6 +52,20 @@ public class ClientMainFragment extends Fragment {
         View view = inflater.inflate(R.layout.activity_list, container, false);
         mClientRecyclerView = view.findViewById(R.id.table_clients);
         mClientRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        date_button = view.findViewById(R.id.date_button);
+        Date date = getTomorrowDate();
+        updateDate(date);
+        date_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentManager manager = getFragmentManager();
+                // TODO - Здесь подставлять вместо date запомненную дату заявки
+                DatePickerFragment dialog = DatePickerFragment.newInstance(date);
+                dialog.setTargetFragment(ClientMainFragment.this, REQUEST_DATE);
+                dialog.show(manager, DIALOG_DATE);
+            }
+        });
 
         // TODO - Заменить на показ свежих заявок по клиентам
          ClientLab clietnLab = ClientLab.get(getContext());
@@ -130,6 +154,28 @@ public class ClientMainFragment extends Fragment {
         @Override
         public int getItemCount() {
             return data.size();
+        }
+    }
+
+    public Date getTomorrowDate() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, 1);
+        return calendar.getTime();
+    }
+
+    private void updateDate(Date date) {
+        date_button.setText(DateFormat.format("MMM d, yyyy", date).toString());
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode != Activity.RESULT_OK) {
+            return;
+        }
+        if (requestCode == REQUEST_DATE) {
+            Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+            // mCrime.setDate(date);
+            updateDate(date);
         }
     }
 }

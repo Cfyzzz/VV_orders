@@ -6,10 +6,16 @@
     tools:context=".archive.ListActivity"
     android:orientation="vertical">
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/date_button"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/table_clients"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_below="@id/date_button"/>
 
     <TextView
         android:id="@+id/status_line"
