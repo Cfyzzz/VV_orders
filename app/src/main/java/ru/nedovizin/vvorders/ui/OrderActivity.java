@@ -3,7 +3,6 @@ package ru.nedovizin.vvorders.ui;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,7 +24,6 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import ru.nedovizin.vvorders.AddressAutoCompleteAdapter;
 import ru.nedovizin.vvorders.ClientAutoCompleteAdapter;
@@ -33,12 +31,10 @@ import ru.nedovizin.vvorders.DelayAutoCompleteTextView;
 import ru.nedovizin.vvorders.ProductAutoCompleteAdapter;
 import ru.nedovizin.vvorders.ProductItem;
 import ru.nedovizin.vvorders.R;
-import ru.nedovizin.vvorders.database.ClientDbSchema;
 import ru.nedovizin.vvorders.models.Address;
 import ru.nedovizin.vvorders.models.ClientLab;
 import ru.nedovizin.vvorders.models.Contragent;
 import ru.nedovizin.vvorders.models.Order;
-import ru.nedovizin.vvorders.models.Product;
 
 public class OrderActivity extends MenuActivity {
 
@@ -80,6 +76,8 @@ public class OrderActivity extends MenuActivity {
                 order.date = mClientLab.DateToString(date);
                 order.code = order.client + order.date;
                 mClientLab.addOrder(order, mProducts);
+                // TODO - Закрыть окно и обновить (!) список заявок
+                finish();
             }
         });
 

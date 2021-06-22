@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +40,7 @@ public class ClientMainFragment extends Fragment {
     private Button date_button;
     private List<String> clients;
     private List<Order> mOrders;
+    private String TAG = ".CMF";
 
     public static final int REQUEST_ORDER = 0;
     public static final String DIALOG_ORDER = "DialogOrder";
@@ -70,11 +72,7 @@ public class ClientMainFragment extends Fragment {
             }
         });
 
-        // TODO - Заменить на показ свежих заявок по клиентам
-         ClientLab clietnLab = ClientLab.get(getContext());
-        clients = clietnLab.getClientsByDate(mDateOrder);
-        mAdapter = new ClientsListAdapter(clients);
-        mClientRecyclerView.setAdapter(mAdapter);
+        updateUI();
 
         send_button = (Button) view.findViewById(R.id.send_button);
         send_button.setOnClickListener(new View.OnClickListener() {
@@ -83,6 +81,7 @@ public class ClientMainFragment extends Fragment {
                 Intent intent = new Intent(getContext(), OrderActivity.class);
                 intent.putExtra(EXTRA_DATE, mDateOrder);
                 startActivity(intent);
+                Log.d(TAG, "send_button.onClick after startActivity");
                 // TODO - Попытка открыть во фрагменте новую заявку
 //                FragmentManager manager = getFragmentManager();
 //                OrderFragment order = OrderFragment.newInstance();
@@ -171,6 +170,20 @@ public class ClientMainFragment extends Fragment {
         date_button.setText(DateFormat.format("MMM d, yyyy", mDateOrder).toString());
     }
 
+    private void updateUI() {
+        ClientLab mClientLab = ClientLab.get(getContext());
+        clients = mClientLab.getClientsByDate(mDateOrder);
+        // TODO - Костыль обновления списка после добавления элемента
+        mAdapter = null;
+
+        if (mAdapter == null) {
+            mAdapter = new ClientsListAdapter(clients);
+            mClientRecyclerView.setAdapter(mAdapter);
+        } else  {
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != Activity.RESULT_OK) {
@@ -181,5 +194,13 @@ public class ClientMainFragment extends Fragment {
             mDateOrder = date;
             updateDate();
         }
+        updateUI();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateUI();
+        Log.d(TAG, "Resume");
     }
 }
