@@ -3,6 +3,7 @@ package ru.nedovizin.vvorders.ui;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,6 +51,8 @@ public class OrderActivity extends MenuActivity {
     private final String ARG_PRODUCT_POSITION = "ru.nedovizin.criminalintent.CrimeListFragment.ARG_PRODUCT_POSITION";
     private final String TAG = ".OrderActivity";
 
+    public static final String EXTRA_DATE = "Date";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,9 +76,9 @@ public class OrderActivity extends MenuActivity {
             public void onClick(View v) {
                 Order order = new Order();
                 order.client = clientTitle.toString();
-                // TODO - Взять дату из установок
-                order.date = new Date().toString();
-                order.code = Integer.toString(order.client.hashCode() + order.date.hashCode());
+                Date date = (Date) getIntent().getSerializableExtra(EXTRA_DATE);
+                order.date = DateFormat.format("yyyy.MM.dd", date).toString();
+                order.code = order.client + order.date;
                 mClientLab.addOrder(order, mProducts);
             }
         });

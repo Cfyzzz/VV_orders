@@ -32,6 +32,7 @@ import ru.nedovizin.vvorders.models.Contragent;
 public class ClientMainFragment extends Fragment {
     private RecyclerView mClientRecyclerView;
     private ClientsListAdapter mAdapter;
+    private Date mDateOrder;
 
     private Button send_button;
     private Button date_button;
@@ -41,6 +42,7 @@ public class ClientMainFragment extends Fragment {
     public static final String DIALOG_ORDER = "DialogOrder";
     public static final String DIALOG_DATE = "DialogDate";
     public static final int REQUEST_DATE = 0;
+    public static final String EXTRA_DATE = "Date";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,14 +56,13 @@ public class ClientMainFragment extends Fragment {
         mClientRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         date_button = view.findViewById(R.id.date_button);
-        Date date = getTomorrowDate();
-        updateDate(date);
+        mDateOrder = getTomorrowDate();
+        updateDate();
         date_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 FragmentManager manager = getFragmentManager();
-                // TODO - Здесь подставлять вместо date запомненную дату заявки
-                DatePickerFragment dialog = DatePickerFragment.newInstance(date);
+                DatePickerFragment dialog = DatePickerFragment.newInstance(mDateOrder);
                 dialog.setTargetFragment(ClientMainFragment.this, REQUEST_DATE);
                 dialog.show(manager, DIALOG_DATE);
             }
@@ -78,6 +79,7 @@ public class ClientMainFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getContext(), OrderActivity.class);
+                intent.putExtra(EXTRA_DATE, mDateOrder);
                 startActivity(intent);
                 // TODO - Попытка открыть во фрагменте новую заявку
 //                FragmentManager manager = getFragmentManager();
@@ -163,8 +165,8 @@ public class ClientMainFragment extends Fragment {
         return calendar.getTime();
     }
 
-    private void updateDate(Date date) {
-        date_button.setText(DateFormat.format("MMM d, yyyy", date).toString());
+    private void updateDate() {
+        date_button.setText(DateFormat.format("MMM d, yyyy", mDateOrder).toString());
     }
 
     @Override
@@ -174,8 +176,8 @@ public class ClientMainFragment extends Fragment {
         }
         if (requestCode == REQUEST_DATE) {
             Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
-            // mCrime.setDate(date);
-            updateDate(date);
+            mDateOrder = date;
+            updateDate();
         }
     }
 }
