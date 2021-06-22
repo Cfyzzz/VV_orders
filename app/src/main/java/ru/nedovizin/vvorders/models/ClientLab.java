@@ -5,12 +5,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
+import android.text.format.DateFormat;
 import android.util.Log;
 
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import ru.nedovizin.vvorders.ProductItem;
@@ -22,6 +24,7 @@ import ru.nedovizin.vvorders.database.ClientDbSchema.ClientTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.AddressTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.ProductTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.OrderTable;
+import ru.nedovizin.vvorders.database.OrderCursorWrapper;
 import ru.nedovizin.vvorders.database.ProductCursorWrapper;
 
 public class ClientLab {
@@ -104,6 +107,32 @@ public class ClientLab {
         return client;
     }
 
+    public List<String> getClientsByDate(Date d) {
+        List<String> clients = new ArrayList<>();
+        String date = DateToString(d);
+        try (OrderCursorWrapper cursor = queryOrders(OrderTable.Cols.DATE+ "=\'" + date + "\'")) {
+            cursor.moveToFirst();
+            while(!cursor.isAfterLast()) {
+                clients.add(cursor.getOrder().client);
+                cursor.moveToNext();
+            }
+        }
+        return clients;
+    }
+
+    public List<Order> getOrdersByDate(Date d) {
+        List<Order> orders = new ArrayList<>();
+        String date = DateToString(d);
+        try (OrderCursorWrapper cursor = queryOrders(OrderTable.Cols.DATE+ "=" + date)) {
+            cursor.moveToFirst();
+            while(!cursor.isAfterLast()) {
+                orders.add(cursor.getOrder());
+                cursor.moveToNext();
+            }
+        }
+        return orders;
+    }
+
     public Contragent getClient(String code) {
         try (ClientCursorWrapper cursor = queryClients(ClientTable.Cols.CODE + " = ?", new String[]{code})) {
             if (cursor.getCount() == 0) {
@@ -177,6 +206,19 @@ public class ClientLab {
         return new ProductCursorWrapper(cursor);
     }
 
+    private OrderCursorWrapper queryOrders(String whereClause) {
+        Cursor cursor = mDatabase.query(
+                OrderTable.NAME,
+                null,
+                whereClause,
+                null,
+                null,
+                null,
+                null
+        );
+        return new OrderCursorWrapper(cursor);
+    }
+
     public List<Address> getAddressesByLikeName(String word) {
         List<Address> addresses = new ArrayList<>();
         Log.d(TAG, "current client: " + getCurrentClient());
@@ -240,6 +282,10 @@ public class ClientLab {
         }
         Log.d(TAG, "count products: " + products.size());
         return products;
+    }
+
+    public String DateToString(Date date) {
+        return DateFormat.format("yyyy.MM.dd", date).toString();
     }
 
     private static ContentValues getClientValues(Contragent client) {

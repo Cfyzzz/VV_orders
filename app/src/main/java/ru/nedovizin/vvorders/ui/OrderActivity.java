@@ -75,9 +75,9 @@ public class OrderActivity extends MenuActivity {
             @Override
             public void onClick(View v) {
                 Order order = new Order();
-                order.client = clientTitle.toString();
+                order.client = clientTitle.getText().toString();
                 Date date = (Date) getIntent().getSerializableExtra(EXTRA_DATE);
-                order.date = DateFormat.format("yyyy.MM.dd", date).toString();
+                order.date = mClientLab.DateToString(date);
                 order.code = order.client + order.date;
                 mClientLab.addOrder(order, mProducts);
             }

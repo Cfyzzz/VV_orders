@@ -28,6 +28,7 @@ import java.util.List;
 import ru.nedovizin.vvorders.R;
 import ru.nedovizin.vvorders.models.ClientLab;
 import ru.nedovizin.vvorders.models.Contragent;
+import ru.nedovizin.vvorders.models.Order;
 
 public class ClientMainFragment extends Fragment {
     private RecyclerView mClientRecyclerView;
@@ -36,7 +37,8 @@ public class ClientMainFragment extends Fragment {
 
     private Button send_button;
     private Button date_button;
-    private List<Contragent> clients;
+    private List<String> clients;
+    private List<Order> mOrders;
 
     public static final int REQUEST_ORDER = 0;
     public static final String DIALOG_ORDER = "DialogOrder";
@@ -70,7 +72,7 @@ public class ClientMainFragment extends Fragment {
 
         // TODO - Заменить на показ свежих заявок по клиентам
          ClientLab clietnLab = ClientLab.get(getContext());
-        clients = clietnLab.getClients();
+        clients = clietnLab.getClientsByDate(mDateOrder);
         mAdapter = new ClientsListAdapter(clients);
         mClientRecyclerView.setAdapter(mAdapter);
 
@@ -98,7 +100,7 @@ public class ClientMainFragment extends Fragment {
         private TextView mIsUpdated;
         private TextView mNumberClient;
         private TextView mNameClient;
-        private Contragent mClient;
+        private String mClient;
 
         public ClientHolder(View view) {
             super(view);
@@ -109,27 +111,27 @@ public class ClientMainFragment extends Fragment {
             itemView.setOnClickListener(this);
         }
 
-        public void bind(Contragent client, int position) {
+        public void bind(String client, int position) {
             mClient = client;
             mIsUpdated.setText((position%2==0)?"V":" ");
             mNumberClient.setText(Integer.toString(position));
-            mNameClient.setText(client.name);
+            mNameClient.setText(client);
         }
 
         @Override
         public void onClick(View v) {
             // TODO - Реакция на клик по заявке в списке заявок
             Toast.makeText(getActivity(),
-                    mClient.name + " clicked!",
+                    mClient + " clicked!",
                     Toast.LENGTH_SHORT).show();
         }
     }
 
     public class ClientsListAdapter extends RecyclerView.Adapter<ClientHolder> {
 
-        private List<Contragent> data;
+        private List<String> data;
 
-        public ClientsListAdapter(List<Contragent> data) {
+        public ClientsListAdapter(List<String> data) {
             this.data = data;
         }
 
@@ -143,13 +145,13 @@ public class ClientMainFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(ClientHolder holder, int position) {
-            Contragent client = data.get(position);
+            String client = data.get(position);
             holder.bind(client, position);
         }
 
         @Override
         public int getItemViewType(int position) {
-            Contragent client = data.get(position);
+            String client = data.get(position);
             return 0;
         }
 

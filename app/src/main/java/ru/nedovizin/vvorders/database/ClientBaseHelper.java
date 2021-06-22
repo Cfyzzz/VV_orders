@@ -10,7 +10,7 @@ import ru.nedovizin.vvorders.database.ClientDbSchema.ProductTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.OrderTable;
 
 public class ClientBaseHelper extends SQLiteOpenHelper {
-    public static final int VERSION = 3;
+    public static final int VERSION = 1;
     public static final String DTABASE_NAME = "clientBase.db";
 
     public ClientBaseHelper(Context context) {
@@ -55,11 +55,5 @@ public class ClientBaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("create table " + OrderTable.Cols.Products.NAME + "(" +
-                OrderTable.Cols.Products.CODE + ", " +
-                OrderTable.Cols.Products.PRODUCT + ", " +
-                OrderTable.Cols.Products.QUANTITY +
-                ")"
-        );
     }
 }
