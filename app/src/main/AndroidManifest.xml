@@ -16,6 +16,7 @@
         tools:targetApi="m">
 
         <activity android:name=".ui.MenuActivity" />
+        <activity android:name=".ui.OrderPagerActivity" />
         <activity
             android:name=".archive.ListActivity"
             android:parentActivityName=".ui.SettingsActivity">

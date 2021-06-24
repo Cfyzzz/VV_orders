@@ -26,6 +26,7 @@ import ru.nedovizin.vvorders.database.ClientDbSchema.ProductTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.OrderTable;
 import ru.nedovizin.vvorders.database.OrderCursorWrapper;
 import ru.nedovizin.vvorders.database.ProductCursorWrapper;
+import ru.nedovizin.vvorders.database.ProductItemCursorWrapper;
 
 public class ClientLab {
 
@@ -120,10 +121,21 @@ public class ClientLab {
         return clients;
     }
 
+    public Order getOrder(String code) {
+        try (OrderCursorWrapper cursor = queryOrders(OrderTable.Cols.CODE+ "= \'" + code + "\'")) {
+            if (cursor.getCount() == 0) {
+                return null;
+            }
+            cursor.moveToFirst();
+            return cursor.getOrder();
+        }
+    }
+
     public List<Order> getOrdersByDate(Date d) {
         List<Order> orders = new ArrayList<>();
         String date = DateToString(d);
-        try (OrderCursorWrapper cursor = queryOrders(OrderTable.Cols.DATE+ "=" + date)) {
+        Log.d(TAG, "date: " + date);
+        try (OrderCursorWrapper cursor = queryOrders(OrderTable.Cols.DATE+ "=\'" + date + "\'")) {
             cursor.moveToFirst();
             while(!cursor.isAfterLast()) {
                 orders.add(cursor.getOrder());
@@ -131,6 +143,22 @@ public class ClientLab {
             }
         }
         return orders;
+    }
+
+    public List<ProductItem> getProductsByOrderId(String orderId) {
+        List<ProductItem> productItems = new ArrayList<>();
+        try (ProductItemCursorWrapper cursor = queryProductItems(
+                OrderTable.Cols.Products.CODE + " = \'" + orderId + "\'")) {
+            cursor.moveToFirst();
+            while(!cursor.isAfterLast()) {
+                // TODO - Оптимизировать через единый запрос
+                ProductItem productItem = cursor.getProductItem();
+                productItem.product = getProductsByLikeWords(productItem.product.name).get(0);
+                productItems.add(productItem);
+                cursor.moveToNext();
+            }
+        }
+        return productItems;
     }
 
     public Contragent getClient(String code) {
@@ -165,6 +193,13 @@ public class ClientLab {
         ContentValues values = new ContentValues();
         values.put(AddressTable.Cols.ACTIVITY, "false");
         mDatabase.update(AddressTable.NAME, values,null, null);
+    }
+
+    public void clearProducts(Order order) {
+        // TODO - очистить таблицу продуктов в заявке
+        mDatabase.delete(OrderTable.Cols.Products.NAME,
+                OrderTable.Cols.Products.CODE + "=\'" + order.code + "\'",
+                null);
     }
 
     private ClientCursorWrapper queryClients(String whereClause, String[] whereArgs) {
@@ -217,6 +252,19 @@ public class ClientLab {
                 null
         );
         return new OrderCursorWrapper(cursor);
+    }
+
+    private ProductItemCursorWrapper queryProductItems(String whereClause) {
+        Cursor cursor = mDatabase.query(
+                OrderTable.Cols.Products.NAME,
+                    null,
+                    whereClause,
+                    null,
+                    null,
+                    null,
+                    null
+        );
+        return new ProductItemCursorWrapper(cursor);
     }
 
     public List<Address> getAddressesByLikeName(String word) {
@@ -321,6 +369,7 @@ public class ClientLab {
         order.activity = "true";
         values.put(OrderTable.Cols.CODE, order.code);
         values.put(OrderTable.Cols.CLIENT, order.client);
+        values.put(OrderTable.Cols.ADDRESS, order.address);
         values.put(OrderTable.Cols.DATE, order.date);
         values.put(OrderTable.Cols.ACTIVITY, order.activity);
         return values;

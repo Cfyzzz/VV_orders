@@ -11,6 +11,8 @@ public class Order {
     public String date;
     @SerializedName("Клиент")
     public String client;
+    @SerializedName("Адрес")
+    public String address;
     @SerializedName("Активность")
     public String activity;
 }

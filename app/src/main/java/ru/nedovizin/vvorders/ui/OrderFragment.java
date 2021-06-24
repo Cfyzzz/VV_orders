@@ -1,5 +1,6 @@
 package ru.nedovizin.vvorders.ui;
 
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -7,11 +8,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -20,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.Inflater;
@@ -33,23 +38,35 @@ import ru.nedovizin.vvorders.R;
 import ru.nedovizin.vvorders.models.Address;
 import ru.nedovizin.vvorders.models.ClientLab;
 import ru.nedovizin.vvorders.models.Contragent;
+import ru.nedovizin.vvorders.models.Order;
 
 public class OrderFragment extends Fragment {
+    public static final String ARG_ORDER_ID = "order_id";
+    public static final String EXTRA_DATE = "Date";
+
     private ClientLab mClientLab;
     private RecyclerView mProductReclerView;
     private OrderFragment.ProductListAdapter mAdapter;
     private List<ProductItem> mProducts;
     private View mOrderActivityBase;
+    private Order mOrder;
+    private Button mSaveOrderButton;
     private final String ARG_PRODUCT_POSITION = "ru.nedovizin.criminalintent.CrimeListFragment.ARG_PRODUCT_POSITION";
-    private final String TAG = ".OrderActivity";
+    private final String TAG = ".OrderFragment";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        String orderId = (String) getArguments().getSerializable(ARG_ORDER_ID);
+        mOrder = ClientLab.get(getActivity()).getOrder(orderId);
     }
 
-    public static  OrderFragment newInstance() {
+    public static  OrderFragment newInstance(String orderId) {
+        Bundle args = new Bundle();
+        args.putSerializable(ARG_ORDER_ID, orderId);
+
         OrderFragment fragment = new OrderFragment();
+        fragment.setArguments(args);
         return fragment;
     }
 
@@ -61,13 +78,33 @@ public class OrderFragment extends Fragment {
         mProductReclerView = view.findViewById(R.id.table_products);
         mProductReclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mClientLab = ClientLab.get(getActivity());
+        mSaveOrderButton = view.findViewById(R.id.save_order_button);
 
         DelayAutoCompleteTextView addressTitle = (DelayAutoCompleteTextView) view.findViewById(R.id.address);
         DelayAutoCompleteTextView clientTitle = (DelayAutoCompleteTextView) view.findViewById(R.id.client);
         DelayAutoCompleteTextView productTitle = (DelayAutoCompleteTextView) view.findViewById(R.id.product_input);
 
-        mProducts = new ArrayList<>();
+        if (mOrder != null) {
+            clientTitle.setText(mOrder.client);
+            addressTitle.setText(mOrder.address);
+        }
+
+        mProducts = mClientLab.getProductsByOrderId(mOrder.code);
         updateUI();
+
+        mSaveOrderButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Order order = new Order();
+                order.client = clientTitle.getText().toString();
+                order.date = mOrder.date;
+                order.code = mOrder.code;
+                order.address = addressTitle.getText().toString();
+                mClientLab.clearProducts(order);
+                mClientLab.addOrder(order, mProducts);
+                getActivity().onBackPressed();
+            }
+        });
 
         clientTitle.setThreshold(4);
         clientTitle.setAdapter(new ClientAutoCompleteAdapter(getActivity()));
@@ -186,7 +223,46 @@ public class OrderFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
-            // TODO - Реакция на клик по строке номенклатуры в заявке
+            // Реакция на клик по строке номенклатуры в заявке
+
+            //Получаем вид с файла prompt.xml, который применим для диалогового окна:
+            LayoutInflater li = LayoutInflater.from(getActivity());
+            View promptsView = li.inflate(R.layout.prompt, null);
+
+            //Создаем AlertDialog
+            AlertDialog.Builder mDialogBuilder = new AlertDialog.Builder(getActivity());
+
+            //Настраиваем prompt.xml для нашего AlertDialog:
+            mDialogBuilder.setView(promptsView);
+
+            //Настраиваем отображение поля для ввода текста в открытом диалоге:
+            final EditText userInput = (EditText) promptsView.findViewById(R.id.input_text);
+            userInput.setText(mProduct.quantity);
+//            userInput.setSelection(0, mProduct.quantity.length());
+
+            //Настраиваем сообщение в диалоговом окне:
+            mDialogBuilder
+                    .setCancelable(false)
+                    .setPositiveButton("OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog,int id) {
+                                    //Вводим текст и отображаем в строке ввода на основном экране:
+                                    mProduct.quantity = userInput.getText().toString();
+                                    updateUI();
+                                }
+                            })
+                    .setNegativeButton("Отмена",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog,int id) {
+                                    dialog.cancel();
+                                }
+                            });
+
+            //Создаем AlertDialog:
+            AlertDialog alertDialog = mDialogBuilder.create();
+
+            //и отображаем его:
+            alertDialog.show();
         }
     }
 

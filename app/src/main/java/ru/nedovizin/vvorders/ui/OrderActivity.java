@@ -24,6 +24,7 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import ru.nedovizin.vvorders.AddressAutoCompleteAdapter;
 import ru.nedovizin.vvorders.ClientAutoCompleteAdapter;
@@ -72,9 +73,11 @@ public class OrderActivity extends MenuActivity {
             public void onClick(View v) {
                 Order order = new Order();
                 order.client = clientTitle.getText().toString();
+                order.address = addressTitle.getText().toString();
                 Date date = (Date) getIntent().getSerializableExtra(EXTRA_DATE);
                 order.date = mClientLab.DateToString(date);
-                order.code = order.client + order.date;
+                order.code = UUID.randomUUID().toString();
+                Log.d(TAG, "address: " + order.address);
                 mClientLab.addOrder(order, mProducts);
                 // TODO - Закрыть окно и обновить (!) список заявок
                 finish();

@@ -38,7 +38,6 @@ public class ClientMainFragment extends Fragment {
 
     private Button send_button;
     private Button date_button;
-    private List<String> clients;
     private List<Order> mOrders;
     private String TAG = ".CMF";
 
@@ -99,7 +98,7 @@ public class ClientMainFragment extends Fragment {
         private TextView mIsUpdated;
         private TextView mNumberClient;
         private TextView mNameClient;
-        private String mClient;
+        private Order order;
 
         public ClientHolder(View view) {
             super(view);
@@ -110,27 +109,26 @@ public class ClientMainFragment extends Fragment {
             itemView.setOnClickListener(this);
         }
 
-        public void bind(String client, int position) {
-            mClient = client;
+        public void bind(Order order, int position) {
+            this.order = order;
             mIsUpdated.setText((position%2==0)?"V":" ");
-            mNumberClient.setText(Integer.toString(position));
-            mNameClient.setText(client);
+            mNumberClient.setText(String.format("%d", position));
+            mNameClient.setText(order.client);
         }
 
         @Override
         public void onClick(View v) {
             // TODO - Реакция на клик по заявке в списке заявок
-            Toast.makeText(getActivity(),
-                    mClient + " clicked!",
-                    Toast.LENGTH_SHORT).show();
+            Intent intent = OrderPagerActivity.newIntent(getActivity(), order.code, mDateOrder);
+            startActivity(intent);
         }
     }
 
     public class ClientsListAdapter extends RecyclerView.Adapter<ClientHolder> {
 
-        private List<String> data;
+        private List<Order> data;
 
-        public ClientsListAdapter(List<String> data) {
+        public ClientsListAdapter(List<Order> data) {
             this.data = data;
         }
 
@@ -144,13 +142,13 @@ public class ClientMainFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(ClientHolder holder, int position) {
-            String client = data.get(position);
-            holder.bind(client, position);
+            Order order = data.get(position);
+            holder.bind(order, position);
         }
 
         @Override
         public int getItemViewType(int position) {
-            String client = data.get(position);
+            String client = data.get(position).client;
             return 0;
         }
 
@@ -172,12 +170,12 @@ public class ClientMainFragment extends Fragment {
 
     private void updateUI() {
         ClientLab mClientLab = ClientLab.get(getContext());
-        clients = mClientLab.getClientsByDate(mDateOrder);
+        mOrders = mClientLab.getOrdersByDate(mDateOrder);
         // TODO - Костыль обновления списка после добавления элемента
         mAdapter = null;
 
         if (mAdapter == null) {
-            mAdapter = new ClientsListAdapter(clients);
+            mAdapter = new ClientsListAdapter(mOrders);
             mClientRecyclerView.setAdapter(mAdapter);
         } else  {
             mAdapter.notifyDataSetChanged();

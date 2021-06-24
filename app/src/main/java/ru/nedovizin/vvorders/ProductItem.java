@@ -15,4 +15,9 @@ public class ProductItem {
         this.product = product;
         quantity = "0";
     }
+
+    public ProductItem(Product product, String quantity) {
+        this.product = product;
+        this.quantity = quantity;
+    }
 }
