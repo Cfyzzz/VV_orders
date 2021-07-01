@@ -87,6 +87,14 @@ public class OrderFragment extends Fragment {
         if (mOrder != null) {
             clientTitle.setText(mOrder.client);
             addressTitle.setText(mOrder.address);
+        } else {
+            mOrder = new Order();
+            mOrder.client = clientTitle.getText().toString();
+            Date date = (Date) getArguments().getSerializable(EXTRA_DATE);
+            Log.d(TAG, "Date = " + date);
+            mOrder.date = mClientLab.DateToString(date);
+            mOrder.code = UUID.randomUUID().toString();
+            mOrder.address = addressTitle.getText().toString();
         }
 
         mProducts = mClientLab.getProductsByOrderId(mOrder.code);
@@ -95,14 +103,12 @@ public class OrderFragment extends Fragment {
         mSaveOrderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Order order = new Order();
-                order.client = clientTitle.getText().toString();
-                order.date = mOrder.date;
-                order.code = mOrder.code;
-                order.address = addressTitle.getText().toString();
-                mClientLab.clearProducts(order);
-                mClientLab.addOrder(order, mProducts);
-                getActivity().onBackPressed();
+                mOrder.client = clientTitle.getText().toString();
+                mOrder.address = addressTitle.getText().toString();
+                mClientLab.clearProducts(mOrder);
+                mClientLab.addOrder(mOrder, mProducts);
+                getActivity().finish();
+//                getActivity().onBackPressed();
             }
         });
 
