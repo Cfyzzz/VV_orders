@@ -51,11 +51,11 @@ public class ProductAutoCompleteAdapter extends BaseAdapter implements Filterabl
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             LayoutInflater inflater = LayoutInflater.from(mContext);
-            convertView = inflater.inflate(R.layout.table_row, parent, false);
+            convertView = inflater.inflate(R.layout.table_simple_row, parent, false);
         }
         ProductItem productItem = getItem(position);
         Product product = productItem.product;
-        TextView tv = convertView.findViewById(R.id.col3);
+        TextView tv = convertView.findViewById(R.id.row_col3);
         tv.setText(product.name);
         return convertView;
     }

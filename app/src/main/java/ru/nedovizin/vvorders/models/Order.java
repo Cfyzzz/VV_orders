@@ -15,4 +15,6 @@ public class Order {
     public String address;
     @SerializedName("Активность")
     public String activity;
+    @SerializedName("Выделено")
+    public String selected;
 }

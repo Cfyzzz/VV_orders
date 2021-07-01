@@ -11,6 +11,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -109,7 +111,7 @@ public class ClientMainFragment extends Fragment {
 
     private class ClientHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         // будет заполнять ваш макет
-        private TextView mIsUpdated;
+        private CheckBox mIsUpdated;
         private TextView mNumberClient;
         private TextView mNameClient;
         private Order order;
@@ -118,6 +120,12 @@ public class ClientMainFragment extends Fragment {
             super(view);
 
             mIsUpdated = itemView.findViewById(R.id.col1);
+            mIsUpdated.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    order.selected = Boolean.toString(isChecked);
+                }
+            });
             mNumberClient = itemView.findViewById(R.id.col2);
             mNameClient = itemView.findViewById(R.id.col3);
             itemView.setOnClickListener(this);
@@ -125,8 +133,9 @@ public class ClientMainFragment extends Fragment {
 
         public void bind(Order order, int position) {
             this.order = order;
-            mIsUpdated.setText((position%2==0)?"V":" ");
-            mNumberClient.setText(String.format("%d", position));
+            if (order.selected != null)
+                mIsUpdated.setChecked(order.selected.equals("true"));
+            mNumberClient.setText(String.format("%d", position + 1));
             mNameClient.setText(order.client);
         }
 

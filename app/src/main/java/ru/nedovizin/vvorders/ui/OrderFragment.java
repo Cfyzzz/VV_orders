@@ -216,8 +216,8 @@ public class OrderFragment extends Fragment {
         public ProductHolder(View view) {
             super(view);
 
-            mNameProduct = itemView.findViewById(R.id.col3);
-            mQuantityProducts = itemView.findViewById(R.id.col4);
+            mNameProduct = itemView.findViewById(R.id.row_col3);
+            mQuantityProducts = itemView.findViewById(R.id.row_col4);
             itemView.setOnClickListener(this);
         }
 
@@ -284,7 +284,7 @@ public class OrderFragment extends Fragment {
         public OrderFragment.ProductHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View itemView;
             itemView = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.table_row, parent, false);
+                    .inflate(R.layout.table_simple_row, parent, false);
             return new OrderFragment.ProductHolder(itemView);
         }
 

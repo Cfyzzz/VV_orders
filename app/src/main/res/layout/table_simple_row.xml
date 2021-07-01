@@ -3,26 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <CheckBox
-        android:id="@+id/col1"
-        android:layout_width="64dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="0"
-        android:gravity="center"
-        android:text=""
-        android:textSize="24sp"/>
-
     <TextView
-        android:id="@+id/col2"
-        android:layout_width="24dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="0"
-        android:gravity="right"
-        android:paddingRight="4dp"
-        android:text="" />
-
-    <TextView
-        android:id="@+id/col3"
+        android:id="@+id/row_col3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
@@ -31,7 +13,7 @@
         android:textSize="24sp" />
 
     <TextView
-        android:id="@+id/col4"
+        android:id="@+id/row_col4"
         android:layout_width="32dp"
         android:layout_height="wrap_content"
         android:layout_weight="0"

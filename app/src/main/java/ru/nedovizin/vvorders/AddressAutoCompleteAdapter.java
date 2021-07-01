@@ -44,10 +44,10 @@ public class AddressAutoCompleteAdapter extends BaseAdapter implements Filterabl
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             LayoutInflater inflater = LayoutInflater.from(mContext);
-            convertView = inflater.inflate(R.layout.table_row, parent, false);
+            convertView = inflater.inflate(R.layout.table_simple_row, parent, false);
         }
         Address address = getItem(position);
-        TextView tv = (TextView) convertView.findViewById(R.id.col3);
+        TextView tv = (TextView) convertView.findViewById(R.id.row_col3);
         tv.setText(address.name);
         return convertView;
     }
