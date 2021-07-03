@@ -17,4 +17,5 @@
     <string name="update_products_button_settings">Обновить номенклатуру</string>
     <string name="quantity_product">Введите нужное количество:</string>
     <string name="date_picker_title">Дата:</string>
+    <string name="send_order_button">Отправить заявку</string>
 </resources>

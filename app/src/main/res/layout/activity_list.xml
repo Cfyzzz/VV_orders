@@ -23,14 +23,30 @@
         android:id="@+id/status_line"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@id/send_button"
+        android:layout_above="@id/line_order_button"
         android:text="Статусное сообщение"/>
 
-    <Button
-        android:id="@+id/send_button"
+    <LinearLayout
+        android:id="@+id/line_order_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:text="@string/send_button"/>
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/new_order_button"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/send_button"/>
+
+        <Button
+            android:id="@+id/send_button"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/send_order_button"/>
+    </LinearLayout>
+
 
 </RelativeLayout>

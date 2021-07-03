@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateFormat;
+import android.util.JsonWriter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,42 +14,52 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
+import java.util.stream.Collectors;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import ru.nedovizin.vvorders.ProductItem;
 import ru.nedovizin.vvorders.R;
+import ru.nedovizin.vvorders.archive.ClientsListAdapter;
+import ru.nedovizin.vvorders.http.APIClient;
+import ru.nedovizin.vvorders.http.APIInterface;
+import ru.nedovizin.vvorders.http.MultipleResource;
+import ru.nedovizin.vvorders.models.Address;
 import ru.nedovizin.vvorders.models.ClientLab;
 import ru.nedovizin.vvorders.models.Contragent;
 import ru.nedovizin.vvorders.models.Order;
+import ru.nedovizin.vvorders.models.Product;
 
 public class ClientMainFragment extends Fragment {
     private RecyclerView mClientRecyclerView;
     private ClientsListAdapter mAdapter;
     private Date mDateOrder;
     private View mActivityListBase;
+    private TextView mStatusLine;
 
-    private Button send_button;
-    private Button date_button;
+    private Button newOrderButton;
+    private Button sendOrderButton;
+    private Button dateButton;
     private List<Order> mOrders;
     private String TAG = ".CMF";
 
@@ -57,6 +68,10 @@ public class ClientMainFragment extends Fragment {
     public static final String DIALOG_DATE = "DialogDate";
     public static final int REQUEST_DATE = 0;
     public static final String EXTRA_DATE = "Date";
+
+    // TODO - Получать из конфигов
+    public static final String URL_BASE = "http://192.168.0.182";
+    public static final String LOGIN_BASE = "Елена";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -69,11 +84,12 @@ public class ClientMainFragment extends Fragment {
         mClientRecyclerView = view.findViewById(R.id.table_clients);
         mClientRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mActivityListBase = view.findViewById(R.id.activity_list_base);
+        mStatusLine = view.findViewById(R.id.status_line);
 
-        date_button = view.findViewById(R.id.date_button);
+        dateButton = view.findViewById(R.id.date_button);
         mDateOrder = getTomorrowDate();
         updateDate();
-        date_button.setOnClickListener(new View.OnClickListener() {
+        dateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 FragmentManager manager = getFragmentManager();
@@ -85,14 +101,14 @@ public class ClientMainFragment extends Fragment {
 
         updateUI();
 
-        send_button = (Button) view.findViewById(R.id.send_button);
-        send_button.setOnClickListener(new View.OnClickListener() {
+        newOrderButton = view.findViewById(R.id.new_order_button);
+        newOrderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getContext(), OrderActivity.class);
                 intent.putExtra(EXTRA_DATE, mDateOrder);
                 startActivity(intent);
-                Log.d(TAG, "send_button.onClick after startActivity");
+                Log.d(TAG, "new_order_button.onClick after startActivity");
                 // TODO - Попытка открыть во фрагменте новую заявку,
                 //  но при закрытии заявки закрывается всё приложение
 //                Bundle args = new Bundle();
@@ -103,6 +119,35 @@ public class ClientMainFragment extends Fragment {
 //                FragmentTransaction transaction = manager.beginTransaction();
 //                transaction.replace(R.id.fragment_container, order);
 //                transaction.commit();
+            }
+        });
+
+        sendOrderButton = view.findViewById(R.id.send_button);
+        sendOrderButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // подготовить все выделенные заявки
+                List<Order> orders = new ArrayList<>();
+                for (Order order : mOrders) {
+                    if (order.selected.equals("true")) {
+                        ClientLab clientLab = ClientLab.get(getContext());
+                        List<ProductItem> productItems = clientLab.getProductsByOrderId(order.code);
+                        order.setProducts(productItems);
+                        orders.add(order);
+                    }
+                }
+                // запаковать в JSON все выделенные заявки
+//                StringWriter output = new StringWriter();
+//                try {
+//                    writeOrderJsonStream(output, orders);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+
+                // отправить данные на сервер AS
+                APIInterface apiInterface;
+                apiInterface = APIClient.getData(URL_BASE).create(APIInterface.class);
+                sendOrders(apiInterface, LOGIN_BASE, orders);
             }
         });
 
@@ -202,15 +247,17 @@ public class ClientMainFragment extends Fragment {
     }
 
     private void updateDate() {
-        date_button.setText(DateFormat.format("MMM d, yyyy", mDateOrder).toString());
+        dateButton.setText(DateFormat.format("MMM d, yyyy", mDateOrder).toString());
     }
 
     private void updateUI() {
         ClientLab mClientLab = ClientLab.get(getContext());
         mOrders = mClientLab.getOrdersByDate(mDateOrder);
+        for (Order order : mOrders) {
+            order.selected = "true";
+        }
         // TODO - Костыль обновления списка после добавления элемента
         mAdapter = null;
-
         if (mAdapter == null) {
             mAdapter = new ClientsListAdapter(mOrders);
             mClientRecyclerView.setAdapter(mAdapter);
@@ -268,5 +315,63 @@ public class ClientMainFragment extends Fragment {
         super.onResume();
         updateUI();
         Log.d(TAG, "Resume");
+    }
+
+    // TODO - Не используется
+    public static void writeOrderJsonStream(Writer output, List<Order> orders) throws IOException {
+        JsonWriter jsonWriter = new JsonWriter(output);
+
+        jsonWriter.beginObject();// begin root
+        jsonWriter.name("Заявки");
+        jsonWriter.beginObject();
+
+        for (Order order : orders) {
+            jsonWriter.beginObject();
+
+            jsonWriter.name("Код").value(order.code);
+            jsonWriter.name("Клиент").value(order.client);
+            jsonWriter.name("Дата").value(order.date);
+            jsonWriter.name("Адрес").value(order.address);
+
+            ClientLab clientLab = ClientLab.get(null);
+            List<ProductItem> productItems = clientLab.getProductsByOrderId(order.code);
+
+            jsonWriter.name("Номенклатура");
+            jsonWriter.beginObject();
+            for (ProductItem item : productItems) {
+                jsonWriter.beginObject();
+                jsonWriter.name("Номенклатура").value(item.product.name);
+                jsonWriter.name("КодНоменклатуры").value(item.product.code);
+                jsonWriter.name("Количество").value(item.quantity);
+                jsonWriter.endObject();
+            }
+            jsonWriter.endObject();
+
+            jsonWriter.endObject();
+        }
+        jsonWriter.endObject();
+        jsonWriter.endObject(); // end root
+    }
+
+    private void sendOrders(APIInterface apiInterface, String userName, List<Order> orders) {
+        mStatusLine.setText("");
+        Call<List<Order>> call = apiInterface.sendOrders(userName, orders);
+        call.enqueue(new Callback<List<Order>>() {
+            @Override
+            public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
+                Log.d(TAG, "sendOrders.body: " + response.body().toString());
+                if (response.code() == 200) {
+                    mStatusLine.setText("Заявки отправлены");
+                } else {
+                    mStatusLine.setText("Заявки не приняты сервером");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Order>> call, Throwable t) {
+                Log.d(TAG, "sendOrders failure");
+                mStatusLine.setText("Сервер не отвечает (failure)");
+            }
+        });
     }
 }
