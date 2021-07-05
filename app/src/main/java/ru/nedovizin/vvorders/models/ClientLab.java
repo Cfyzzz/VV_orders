@@ -333,7 +333,7 @@ public class ClientLab {
     }
 
     public String DateToString(Date date) {
-        return DateFormat.format("yyyy.MM.dd", date).toString();
+        return DateFormat.format("yyyy-MM-ddThh:mm:ss", date).toString();
     }
 
     private static ContentValues getClientValues(Contragent client) {

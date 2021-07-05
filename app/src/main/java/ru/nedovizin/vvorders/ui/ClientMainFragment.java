@@ -3,7 +3,6 @@ package ru.nedovizin.vvorders.ui;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.JsonWriter;
@@ -17,7 +16,6 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -27,28 +25,21 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import ru.nedovizin.vvorders.ProductItem;
 import ru.nedovizin.vvorders.R;
-import ru.nedovizin.vvorders.archive.ClientsListAdapter;
 import ru.nedovizin.vvorders.http.APIClient;
 import ru.nedovizin.vvorders.http.APIInterface;
-import ru.nedovizin.vvorders.http.MultipleResource;
-import ru.nedovizin.vvorders.models.Address;
 import ru.nedovizin.vvorders.models.ClientLab;
-import ru.nedovizin.vvorders.models.Contragent;
 import ru.nedovizin.vvorders.models.Order;
-import ru.nedovizin.vvorders.models.Product;
 
 public class ClientMainFragment extends Fragment {
     private RecyclerView mClientRecyclerView;
@@ -136,15 +127,7 @@ public class ClientMainFragment extends Fragment {
                         orders.add(order);
                     }
                 }
-                // запаковать в JSON все выделенные заявки
-//                StringWriter output = new StringWriter();
-//                try {
-//                    writeOrderJsonStream(output, orders);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
 
-                // отправить данные на сервер AS
                 APIInterface apiInterface;
                 apiInterface = APIClient.getData(URL_BASE).create(APIInterface.class);
                 sendOrders(apiInterface, LOGIN_BASE, orders);
@@ -321,8 +304,8 @@ public class ClientMainFragment extends Fragment {
     public static void writeOrderJsonStream(Writer output, List<Order> orders) throws IOException {
         JsonWriter jsonWriter = new JsonWriter(output);
 
-        jsonWriter.beginObject();// begin root
-        jsonWriter.name("Заявки");
+//        jsonWriter.beginObject();// begin root
+//        jsonWriter.name("Заявки");
         jsonWriter.beginObject();
 
         for (Order order : orders) {
@@ -350,28 +333,33 @@ public class ClientMainFragment extends Fragment {
             jsonWriter.endObject();
         }
         jsonWriter.endObject();
-        jsonWriter.endObject(); // end root
+//        jsonWriter.endObject(); // end root
     }
 
     private void sendOrders(APIInterface apiInterface, String userName, List<Order> orders) {
         mStatusLine.setText("");
-        Call<List<Order>> call = apiInterface.sendOrders(userName, orders);
-        call.enqueue(new Callback<List<Order>>() {
-            @Override
-            public void onResponse(Call<List<Order>> call, Response<List<Order>> response) {
-                Log.d(TAG, "sendOrders.body: " + response.body().toString());
-                if (response.code() == 200) {
-                    mStatusLine.setText("Заявки отправлены");
-                } else {
-                    mStatusLine.setText("Заявки не приняты сервером");
+        for (Order order : orders) {
+            order.nomenclaturaProperty = "Collection(StandardODATA.Document_Заявка_Товары_RowType)";
+            Call<Order> call = apiInterface.sendOrder(order);
+            call.enqueue(new Callback<Order>() {
+                @Override
+                public void onResponse(Call<Order> call, Response<Order> response) {
+//                Log.d(TAG, "sendOrders.body: " + response.body().toString());
+                    if (response.code() == 200) {
+                        mStatusLine.setText("Заявки отправлены");
+                    } else {
+                        mStatusLine.setText("Заявки не приняты сервером");
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(Call<List<Order>> call, Throwable t) {
-                Log.d(TAG, "sendOrders failure");
-                mStatusLine.setText("Сервер не отвечает (failure)");
-            }
-        });
+                @Override
+                public void onFailure(Call<Order> call, Throwable t) {
+                    Log.d(TAG, "sendOrders failure");
+                    mStatusLine.setText("Сервер не отвечает (failure)");
+                }
+            });
+
+//            Call<Order.NomenclaturaItem> call2 =
+        }
     }
 }

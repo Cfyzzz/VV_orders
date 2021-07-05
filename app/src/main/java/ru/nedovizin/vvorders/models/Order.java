@@ -8,9 +8,9 @@ import java.util.List;
 import ru.nedovizin.vvorders.ProductItem;
 
 public class Order {
-    @SerializedName("Код")
+    @SerializedName("Ref_Key")
     public String code;
-    @SerializedName("Дата")
+    @SerializedName("Date")
     public String date;
     @SerializedName("Клиент")
     public String client;
@@ -21,24 +21,28 @@ public class Order {
     @SerializedName("Выделено")
     public String selected;
 
-    @SerializedName("Номенклатура")
+    @SerializedName("Товары@odata.type")
+    public String nomenclaturaProperty;
+
+    @SerializedName("Товары")
     public List<NomenclaturaItem> nomenclaturaItems = null;
 
     public class NomenclaturaItem {
         @SerializedName("Номенклатура")
         public String name;
-        @SerializedName("КодНоменклатуры")
-        public String code;
+        @SerializedName("LineNumber")
+        public String lineNumber;
         @SerializedName("Количество")
         public String quantity;
     }
 
     public void setProducts(List<ProductItem> products) {
         nomenclaturaItems = new ArrayList<>();
+        int i = 1;
         for (ProductItem pItem : products) {
             NomenclaturaItem nItem = new NomenclaturaItem();
             nItem.name = pItem.product.name;
-            nItem.code = pItem.product.code;
+            nItem.lineNumber = Integer.toString(i++);
             nItem.quantity = pItem.quantity;
             nomenclaturaItems.add(nItem);
         }
