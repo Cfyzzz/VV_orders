@@ -133,9 +133,9 @@ public class ClientLab {
 
     public List<Order> getOrdersByDate(Date d) {
         List<Order> orders = new ArrayList<>();
-        String date = DateToString(d);
+        String date = DateToString(d).split(":")[0];
         Log.d(TAG, "date: " + date);
-        try (OrderCursorWrapper cursor = queryOrders(OrderTable.Cols.DATE+ "=\'" + date + "\'")) {
+        try (OrderCursorWrapper cursor = queryOrders(OrderTable.Cols.DATE+ " LIKE \'" + date + "%\'")) {
             cursor.moveToFirst();
             while(!cursor.isAfterLast()) {
                 orders.add(cursor.getOrder());

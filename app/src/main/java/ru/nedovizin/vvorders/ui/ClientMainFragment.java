@@ -59,6 +59,7 @@ public class ClientMainFragment extends Fragment {
     public static final String DIALOG_DATE = "DialogDate";
     public static final int REQUEST_DATE = 0;
     public static final String EXTRA_DATE = "Date";
+    public static final String STATUS_ORDER_RECIEVED = "recieved";
 
     // TODO - Получать из конфигов
     public static final String URL_BASE = "http://192.168.0.182";
@@ -79,7 +80,7 @@ public class ClientMainFragment extends Fragment {
 
         dateButton = view.findViewById(R.id.date_button);
         mDateOrder = getTomorrowDate();
-        updateDate();
+//        updateDate();
         dateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -234,6 +235,7 @@ public class ClientMainFragment extends Fragment {
     }
 
     private void updateUI() {
+        updateDate();
         ClientLab mClientLab = ClientLab.get(getContext());
         mOrders = mClientLab.getOrdersByDate(mDateOrder);
         for (Order order : mOrders) {
@@ -339,13 +341,15 @@ public class ClientMainFragment extends Fragment {
     private void sendOrders(APIInterface apiInterface, String userName, List<Order> orders) {
         mStatusLine.setText("");
         for (Order order : orders) {
-            order.nomenclaturaProperty = "Collection(StandardODATA.Document_Заявка_Товары_RowType)";
+//            order.nomenclaturaProperty = "Collection(StandardODATA.Document_Заявка_Товары_RowType)";
             Call<Order> call = apiInterface.sendOrder(order);
             call.enqueue(new Callback<Order>() {
                 @Override
                 public void onResponse(Call<Order> call, Response<Order> response) {
 //                Log.d(TAG, "sendOrders.body: " + response.body().toString());
-                    if (response.code() == 200) {
+                    Log.d(TAG, "response code: " + response.code());
+                    String status = response.body().status;
+                    if (status.equals(STATUS_ORDER_RECIEVED)) {
                         mStatusLine.setText("Заявки отправлены");
                     } else {
                         mStatusLine.setText("Заявки не приняты сервером");
