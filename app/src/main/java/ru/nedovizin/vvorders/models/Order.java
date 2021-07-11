@@ -23,8 +23,8 @@ public class Order {
     @SerializedName("Статус")
     public String status;
 
-    @SerializedName("Товары@odata.type")
-    public String nomenclaturaProperty = "Collection(StandardODATA.Document_Заявка_Товары_RowType)";
+//    @SerializedName("Товары@odata.type")
+//    public String nomenclaturaProperty = "Collection(StandardODATA.Document_Заявка_Товары_RowType)";
 
     @SerializedName("Товары")
     public List<NomenclaturaItem> nomenclaturaItems = null;

@@ -44,6 +44,7 @@ import ru.nedovizin.vvorders.http.APIInterface;
 import ru.nedovizin.vvorders.http.MultipleResource;
 import ru.nedovizin.vvorders.models.ClientLab;
 import ru.nedovizin.vvorders.models.Order;
+import ru.nedovizin.vvorders.models.OrdersForSend;
 
 public class ClientMainFragment extends Fragment {
     private RecyclerView mClientRecyclerView;
@@ -73,7 +74,6 @@ public class ClientMainFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-//        getActivity().getMenuInflater().inflate(R.menu.main_menu, menu);
     }
 
     @Override
@@ -86,6 +86,7 @@ public class ClientMainFragment extends Fragment {
             APIInterface apiInterface;
             apiInterface = APIClient.getData(URL_BASE).create(APIInterface.class);
             updateOrderStatuses(apiInterface, mDateOrder);
+            updateUI();
             return true;
         }
         return getActivity().onOptionsItemSelected(item);
@@ -159,9 +160,9 @@ public class ClientMainFragment extends Fragment {
                 APIInterface apiInterface;
                 apiInterface = APIClient.getData(URL_BASE).create(APIInterface.class);
                 sendOrders(apiInterface, LOGIN_BASE, orders);
-                // TODO - Включить эту строку, когда будет готова групповая отправка проверки статусов заявок
-//                updateOrderStatuses(apiInterface, mDateOrder);
-                mStatusLine.setText("");
+                updateOrderStatuses(apiInterface, mDateOrder);
+                mStatusLine.setText("Заявки отправлены на сервер");
+                updateUI();
             }
         });
 
@@ -393,32 +394,24 @@ public class ClientMainFragment extends Fragment {
 
     private void sendOrders(APIInterface apiInterface, String userName, List<Order> orders) {
         mStatusLine.setText("");
-        for (Order order : orders) {
-//            order.nomenclaturaProperty = "Collection(StandardODATA.Document_Заявка_Товары_RowType)";
-            Call<Order> call = apiInterface.sendOrder(order);
-            call.enqueue(new Callback<Order>() {
-                @Override
-                public void onResponse(Call<Order> call, Response<Order> response) {
-//                Log.d(TAG, "sendOrders.body: " + response.body().toString());
-                    Log.d(TAG, "response code: " + response.code());
-                    int code = response.code();
-                    if (code == 201) {
-                        order.status = STATUS_ORDER_RECIEVED;
-                        ClientLab.get(getContext()).updateOrder(order);
-                        mStatusLine.setText("Заявки отправлены");
-                    } else {
-                        mStatusLine.setText("Заявки не приняты сервером");
-                    }
+        OrdersForSend mOrdersForSend = new OrdersForSend(orders);
+        Call<MultipleResource> call = apiInterface.sendOrders(mOrdersForSend);
+        call.enqueue(new Callback<MultipleResource>() {
+            @Override
+            public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
+                int code = response.code();
+                if (code == 201) {
+                    mStatusLine.setText("Заявки отправлены");
+                } else {
+                    mStatusLine.setText("Заявки не приняты сервером");
                 }
+            }
 
-                @Override
-                public void onFailure(Call<Order> call, Throwable t) {
-                    Log.d(TAG, "sendOrders failure");
-                    mStatusLine.setText("Сервер не отвечает (failure)");
-                }
-            });
-        }
-        updateUI();
+            @Override
+            public void onFailure(Call<MultipleResource> call, Throwable t) {
+                mStatusLine.setText("Сервер не отвечает (failure)");
+            }
+        });
     }
 
     private void updateOrderStatuses(APIInterface apiInterface, Date date) {
@@ -430,6 +423,7 @@ public class ClientMainFragment extends Fragment {
             @Override
             public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
                 if (response.code() == 200) {
+                    mStatusLine.setText("");
                     Log.d(TAG, response.body().toString());
                     ClientLab clientLab = ClientLab.get(getContext());
                     for (MultipleResource.StatusOrder statusOrder : response.body().answer.mStatusOrders) {
@@ -440,7 +434,7 @@ public class ClientMainFragment extends Fragment {
                             clientLab.updateOrder(order);
                         }
                     }
-                    updateUI();
+                    mStatusLine.setText("Статусы заявок обновлены");
                 } else {
                     mStatusLine.setText("Запрос на обновление статусов не принят сервером");
                 }
