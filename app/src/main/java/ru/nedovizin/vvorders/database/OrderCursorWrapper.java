@@ -15,12 +15,14 @@ public class OrderCursorWrapper extends CursorWrapper {
         String date = getString(getColumnIndex(ClientDbSchema.OrderTable.Cols.DATE));
         String client = getString(getColumnIndex(ClientDbSchema.OrderTable.Cols.CLIENT));
         String address = getString(getColumnIndex(ClientDbSchema.OrderTable.Cols.ADDRESS));
+        String status = getString(getColumnIndex(ClientDbSchema.OrderTable.Cols.STATUS));
 
         Order order = new Order();
         order.code = code;
         order.date = date;
         order.client = client;
         order.address = address;
+        order.status = status;
         return order;
     }
 }

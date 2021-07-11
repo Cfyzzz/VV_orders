@@ -22,6 +22,15 @@ public class MultipleResource {
         public List<Address> mAddresses = null;
         @SerializedName("Номенклатура")
         public List<Product> mProducts = null;
+        @SerializedName("Статусы")
+        public List<StatusOrder> mStatusOrders = null;
+    }
+
+    public class StatusOrder {
+        @SerializedName("Код")
+        public String code;
+        @SerializedName("Статус")
+        public String status;
     }
 }
 

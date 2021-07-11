@@ -8,6 +8,9 @@ import android.text.format.DateFormat;
 import android.util.JsonWriter;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -38,6 +41,7 @@ import ru.nedovizin.vvorders.ProductItem;
 import ru.nedovizin.vvorders.R;
 import ru.nedovizin.vvorders.http.APIClient;
 import ru.nedovizin.vvorders.http.APIInterface;
+import ru.nedovizin.vvorders.http.MultipleResource;
 import ru.nedovizin.vvorders.models.ClientLab;
 import ru.nedovizin.vvorders.models.Order;
 
@@ -59,11 +63,33 @@ public class ClientMainFragment extends Fragment {
     public static final String DIALOG_DATE = "DialogDate";
     public static final int REQUEST_DATE = 0;
     public static final String EXTRA_DATE = "Date";
-    public static final String STATUS_ORDER_RECIEVED = "recieved";
+    public static final String STATUS_ORDER_RECIEVED = "Recieved";
+    public static final String STATUS_ORDER_POSTED = "Posted";
 
     // TODO - Получать из конфигов
     public static final String URL_BASE = "http://192.168.0.182";
     public static final String LOGIN_BASE = "Елена";
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+//        getActivity().getMenuInflater().inflate(R.menu.main_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        Log.d(TAG, "id item menu: " + id);
+        if (id == R.id.action_update_statuses) {
+            // TODO - update statuses
+            Log.d(TAG, "press update statuses");
+            APIInterface apiInterface;
+            apiInterface = APIClient.getData(URL_BASE).create(APIInterface.class);
+            updateOrderStatuses(apiInterface, mDateOrder);
+            return true;
+        }
+        return getActivity().onOptionsItemSelected(item);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -72,6 +98,7 @@ public class ClientMainFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.activity_list, container, false);
         mClientRecyclerView = view.findViewById(R.id.table_clients);
         mClientRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -143,6 +170,7 @@ public class ClientMainFragment extends Fragment {
         private CheckBox mIsUpdated;
         private TextView mNumberClient;
         private TextView mNameClient;
+        private TextView mStatus;
         private Order order;
 
         public ClientHolder(View view) {
@@ -157,6 +185,7 @@ public class ClientMainFragment extends Fragment {
             });
             mNumberClient = itemView.findViewById(R.id.col2);
             mNameClient = itemView.findViewById(R.id.col3);
+            mStatus = itemView.findViewById(R.id.col4);
             itemView.setOnClickListener(this);
         }
 
@@ -166,6 +195,21 @@ public class ClientMainFragment extends Fragment {
                 mIsUpdated.setChecked(order.selected.equals("true"));
             mNumberClient.setText(String.format("%d", position + 1));
             mNameClient.setText(order.client);
+            if (order.status == null)
+                order.status = "";
+            Log.d(TAG, order.client + " : " + order.status);
+            switch (order.status){
+                case STATUS_ORDER_POSTED:
+                    mStatus.setText("V");
+                    mStatus.setTextColor(getResources().getColor(R.color.green));
+                    break;
+                case STATUS_ORDER_RECIEVED:
+                    mStatus.setText("O");
+                    mStatus.setTextColor(getResources().getColor(R.color.blue));
+                    break;
+                default:
+                    mStatus.setText("-");
+            }
         }
 
         @Override
@@ -348,8 +392,8 @@ public class ClientMainFragment extends Fragment {
                 public void onResponse(Call<Order> call, Response<Order> response) {
 //                Log.d(TAG, "sendOrders.body: " + response.body().toString());
                     Log.d(TAG, "response code: " + response.code());
-                    String status = response.body().status;
-                    if (status.equals(STATUS_ORDER_RECIEVED)) {
+                    int code = response.code();
+                    if (code == 201) {
                         mStatusLine.setText("Заявки отправлены");
                     } else {
                         mStatusLine.setText("Заявки не приняты сервером");
@@ -366,4 +410,38 @@ public class ClientMainFragment extends Fragment {
 //            Call<Order.NomenclaturaItem> call2 =
         }
     }
+
+    private void updateOrderStatuses(APIInterface apiInterface, Date date) {
+        mStatusLine.setText("");
+        String d = ClientLab.get(getContext()).DateToString(date);
+        Log.d(TAG, ">> updateOrderStatuses Date: " + d);
+        Call<MultipleResource> call = apiInterface.doGetStatus(d);
+        call.enqueue(new Callback<MultipleResource>() {
+            @Override
+            public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
+                if (response.code() == 200) {
+                    Log.d(TAG, response.body().toString());
+                    ClientLab clientLab = ClientLab.get(getContext());
+                    for (MultipleResource.StatusOrder statusOrder : response.body().answer.mStatusOrders) {
+                        Order order = clientLab.getOrder(statusOrder.code);
+                        if (order != null) {
+                            Log.d(TAG, "update status " + order.client + " is " + statusOrder.status);
+                            order.status = statusOrder.status;
+                            clientLab.updateOrder(order);
+                        }
+                    }
+                    updateUI();
+                } else {
+                    mStatusLine.setText("Запрос на обновление статусов не принят сервером");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<MultipleResource> call, Throwable t) {
+                Log.d(TAG, "sendOrders failure");
+                mStatusLine.setText("Сервер не отвечает (failure)");
+            }
+        });
+    };
+
 }

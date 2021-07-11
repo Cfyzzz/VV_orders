@@ -18,4 +18,5 @@
     <string name="quantity_product">Введите нужное количество:</string>
     <string name="date_picker_title">Дата:</string>
     <string name="send_order_button">Отправить заявку</string>
+    <string name="update_statuses">Обновить статусы заявок</string>
 </resources>

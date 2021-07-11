@@ -133,7 +133,7 @@ public class ClientLab {
 
     public List<Order> getOrdersByDate(Date d) {
         List<Order> orders = new ArrayList<>();
-        String date = DateToString(d).split(":")[0];
+        String date = DateToString(d).split("T")[0];
         Log.d(TAG, "date: " + date);
         try (OrderCursorWrapper cursor = queryOrders(OrderTable.Cols.DATE+ " LIKE \'" + date + "%\'")) {
             cursor.moveToFirst();
@@ -169,6 +169,11 @@ public class ClientLab {
             cursor.moveToFirst();
             return cursor.getClient();
         }
+    }
+
+    public void updateOrder(Order order) {
+        ContentValues values = getOrderValues(order);
+        mDatabase.insert(OrderTable.NAME, null, values);
     }
 
     public void updateClient(Contragent client) {
@@ -372,6 +377,7 @@ public class ClientLab {
         values.put(OrderTable.Cols.ADDRESS, order.address);
         values.put(OrderTable.Cols.DATE, order.date);
         values.put(OrderTable.Cols.ACTIVITY, order.activity);
+        values.put(OrderTable.Cols.STATUS, order.status);
         return values;
     }
 

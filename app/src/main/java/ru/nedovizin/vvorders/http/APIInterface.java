@@ -23,6 +23,6 @@ public interface APIInterface {
     @POST("/OrdersAS/odata/standard.odata/Document_Заявка?$format=json")
     Call<Order> sendOrder(@Body Order order);
 
-    @POST("/OrdersAS/odata/standard.odata/Document_Заявка?$format=json")
-    Call<Order.NomenclaturaItem> sendProductsByOrder(@Body Order.NomenclaturaItem products);
+    @GET("/OrdersAS/hs/db/get_status/{date}")
+    Call<MultipleResource> doGetStatus(@Path("date") String date);
 }

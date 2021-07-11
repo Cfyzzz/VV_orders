@@ -50,6 +50,7 @@ public class ClientBaseHelper extends SQLiteOpenHelper {
                 OrderTable.Cols.CLIENT + ", " +
                 OrderTable.Cols.ADDRESS + ", " +
                 OrderTable.Cols.ACTIVITY + ", " +
+                OrderTable.Cols.STATUS + ", " +
                 " unique(code) ON CONFLICT replace)"
         );
     }

@@ -37,6 +37,7 @@ public class ClientDbSchema {
             public static final String ACTIVITY = "activity";
             public static final String CLIENT = "client_name";
             public static final String ADDRESS = "address";
+            public static final String STATUS = "status";
             public static final class Products {
                 public static final String NAME = "order_products";
                 // TODO - Здесь должно быть Cols
