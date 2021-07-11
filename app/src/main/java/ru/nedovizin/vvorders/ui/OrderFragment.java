@@ -87,6 +87,14 @@ public class OrderFragment extends Fragment {
         if (mOrder != null) {
             clientTitle.setText(mOrder.client);
             addressTitle.setText(mOrder.address);
+
+            // Блокируем элементы, если заявка имеет статус (значит она уже отправлена на сервер)
+            if (mOrder.status != null && !mOrder.status.isEmpty()) {
+                mProductReclerView.setEnabled(false);
+                addressTitle.setEnabled(false);
+                clientTitle.setEnabled(false);
+                productTitle.setEnabled(false);
+            }
         } else {
             mOrder = new Order();
             mOrder.client = clientTitle.getText().toString();
@@ -230,6 +238,9 @@ public class OrderFragment extends Fragment {
         @Override
         public void onClick(View v) {
             // Реакция на клик по строке номенклатуры в заявке
+
+            if (mOrder.status != null && !mOrder.status.isEmpty())
+                return;
 
             //Получаем вид с файла prompt.xml, который применим для диалогового окна:
             LayoutInflater li = LayoutInflater.from(getActivity());

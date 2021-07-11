@@ -107,7 +107,6 @@ public class ClientMainFragment extends Fragment {
 
         dateButton = view.findViewById(R.id.date_button);
         mDateOrder = getTomorrowDate();
-//        updateDate();
         dateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -146,9 +145,10 @@ public class ClientMainFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 // подготовить все выделенные заявки
+                mStatusLine.setText("");
                 List<Order> orders = new ArrayList<>();
                 for (Order order : mOrders) {
-                    if (order.selected.equals("true")) {
+                    if (order.selected != null && order.selected.equals("true")) {
                         ClientLab clientLab = ClientLab.get(getContext());
                         List<ProductItem> productItems = clientLab.getProductsByOrderId(order.code);
                         order.setProducts(productItems);
@@ -159,6 +159,9 @@ public class ClientMainFragment extends Fragment {
                 APIInterface apiInterface;
                 apiInterface = APIClient.getData(URL_BASE).create(APIInterface.class);
                 sendOrders(apiInterface, LOGIN_BASE, orders);
+                // TODO - Включить эту строку, когда будет готова групповая отправка проверки статусов заявок
+//                updateOrderStatuses(apiInterface, mDateOrder);
+                mStatusLine.setText("");
             }
         });
 
@@ -198,6 +201,10 @@ public class ClientMainFragment extends Fragment {
             if (order.status == null)
                 order.status = "";
             Log.d(TAG, order.client + " : " + order.status);
+            updateViewStatusOrder(order);
+        }
+
+        private void updateViewStatusOrder(Order order) {
             switch (order.status){
                 case STATUS_ORDER_POSTED:
                     mStatus.setText("V");
@@ -214,7 +221,7 @@ public class ClientMainFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
-            // TODO - Реакция на клик по заявке в списке заявок
+            // Реакция на клик по заявке в списке заявок
             Intent intent = OrderPagerActivity.newIntent(getActivity(), order.code, mDateOrder);
             startActivity(intent);
         }
@@ -283,7 +290,9 @@ public class ClientMainFragment extends Fragment {
         ClientLab mClientLab = ClientLab.get(getContext());
         mOrders = mClientLab.getOrdersByDate(mDateOrder);
         for (Order order : mOrders) {
-            order.selected = "true";
+            if (order.status == null) order.status = "";
+            if (order.status.isEmpty())
+                order.selected = "true";
         }
         // TODO - Костыль обновления списка после добавления элемента
         mAdapter = null;
@@ -394,6 +403,8 @@ public class ClientMainFragment extends Fragment {
                     Log.d(TAG, "response code: " + response.code());
                     int code = response.code();
                     if (code == 201) {
+                        order.status = STATUS_ORDER_RECIEVED;
+                        ClientLab.get(getContext()).updateOrder(order);
                         mStatusLine.setText("Заявки отправлены");
                     } else {
                         mStatusLine.setText("Заявки не приняты сервером");
@@ -406,9 +417,8 @@ public class ClientMainFragment extends Fragment {
                     mStatusLine.setText("Сервер не отвечает (failure)");
                 }
             });
-
-//            Call<Order.NomenclaturaItem> call2 =
         }
+        updateUI();
     }
 
     private void updateOrderStatuses(APIInterface apiInterface, Date date) {
