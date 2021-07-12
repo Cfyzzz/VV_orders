@@ -135,7 +135,8 @@ public class ClientLab {
         List<Order> orders = new ArrayList<>();
         String date = DateToString(d).split("T")[0];
         Log.d(TAG, "date: " + date);
-        try (OrderCursorWrapper cursor = queryOrders(OrderTable.Cols.DATE+ " LIKE \'" + date + "%\'")) {
+        try (OrderCursorWrapper cursor = queryOrders(OrderTable.Cols.DATE+ " LIKE \'" + date + "%\'"
+                + " AND " + OrderTable.Cols.ACTIVITY + " = \'true\'")) {
             cursor.moveToFirst();
             while(!cursor.isAfterLast()) {
                 orders.add(cursor.getOrder());
@@ -200,10 +201,35 @@ public class ClientLab {
         mDatabase.update(AddressTable.NAME, values,null, null);
     }
 
+    public void deleteOrder(Order order) {
+        clearProducts(order);
+        mDatabase.delete(OrderTable.NAME,
+                OrderTable.Cols.CODE + " = \'" + order.code + "\'",
+                null);
+    }
+
     public void clearProducts(Order order) {
-        // TODO - очистить таблицу продуктов в заявке
+        // очистить таблицу продуктов в заявке
         mDatabase.delete(OrderTable.Cols.Products.NAME,
                 OrderTable.Cols.Products.CODE + "=\'" + order.code + "\'",
+                null);
+    }
+
+    public void inactivateOrder(Order order) {
+        order.activity = "false";
+        ContentValues values = getOrderValues(order);
+        mDatabase.update(OrderTable.NAME,
+                values,
+                OrderTable.Cols.CODE + " = \'" + order.code + "\'",
+                null);
+    }
+
+    public void activateOrder(Order order) {
+        order.activity = "true";
+        ContentValues values = getOrderValues(order);
+        mDatabase.update(OrderTable.NAME,
+                values,
+                OrderTable.Cols.CODE + " = \'" + order.code + "\'",
                 null);
     }
 
@@ -371,7 +397,6 @@ public class ClientLab {
 
     private static ContentValues getOrderValues(Order order) {
         ContentValues values = new ContentValues();
-        order.activity = "true";
         values.put(OrderTable.Cols.CODE, order.code);
         values.put(OrderTable.Cols.CLIENT, order.client);
         values.put(OrderTable.Cols.ADDRESS, order.address);

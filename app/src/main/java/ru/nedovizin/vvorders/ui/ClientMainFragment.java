@@ -58,6 +58,7 @@ public class ClientMainFragment extends Fragment {
     private Button dateButton;
     private List<Order> mOrders;
     private String TAG = ".CMF";
+    private int codeResult = 0;
 
     public static final int REQUEST_ORDER = 0;
     public static final String DIALOG_ORDER = "DialogOrder";
@@ -81,7 +82,7 @@ public class ClientMainFragment extends Fragment {
         int id = item.getItemId();
         Log.d(TAG, "id item menu: " + id);
         if (id == R.id.action_update_statuses) {
-            // TODO - update statuses
+            // update statuses
             Log.d(TAG, "press update statuses");
             APIInterface apiInterface;
             apiInterface = APIClient.getData(URL_BASE).create(APIInterface.class);
@@ -266,11 +267,18 @@ public class ClientMainFragment extends Fragment {
         }
 
         public void removeItem(int position) {
+            // Деактивируем в базе
+            Order order = data.get(position);
+            ClientLab.get(getContext()).inactivateOrder(order);
+            // Чистим в списке
             data.remove(position);
             notifyItemRemoved(position);
         }
 
         public void restoreItem(Order item, int position) {
+            // Активируем в базе
+            ClientLab.get(getContext()).activateOrder(item);
+            // Возвращаем в список
             data.add(position, item);
             notifyItemInserted(position);
         }
@@ -295,9 +303,8 @@ public class ClientMainFragment extends Fragment {
             if (order.status.isEmpty())
                 order.selected = "true";
         }
-        // TODO - Костыль обновления списка после добавления элемента
-        mAdapter = null;
-        if (mAdapter == null) {
+
+        if (mAdapter == null || mAdapter.getItemCount() != mOrders.size()) {
             mAdapter = new ClientsListAdapter(mOrders);
             mClientRecyclerView.setAdapter(mAdapter);
             enableSwipeToDeleteAndUndo();
@@ -314,20 +321,33 @@ public class ClientMainFragment extends Fragment {
                 final int position = viewHolder.getAdapterPosition();
                 final Order order = mAdapter.getData().get(position);
 
-                mAdapter.removeItem(position);
+                boolean isDeleteAvailable = true;
+                if (order.status!=null && !order.status.isEmpty()) {
+                    APIInterface apiInterface;
+                    apiInterface = APIClient.getData(URL_BASE).create(APIInterface.class);
+                    sendDeleteOrder(apiInterface, order.code);
+                    isDeleteAvailable = getCodeResult() == 204;
+                }
 
-                Snackbar snackbar = Snackbar
-                        .make(mActivityListBase, "Элемент был удалён из списка.", Snackbar.LENGTH_LONG);
-                snackbar.setAction("ОТМЕНА", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        mAdapter.restoreItem(order, position);
-                        mClientRecyclerView.scrollToPosition(position);
-                    }
-                });
+                if (isDeleteAvailable) {
 
-                snackbar.setActionTextColor(Color.YELLOW);
-                snackbar.show();
+                    mAdapter.removeItem(position);
+
+                    Snackbar snackbar = Snackbar
+                            .make(mActivityListBase, "Элемент был удалён из списка.", Snackbar.LENGTH_LONG);
+                    snackbar.setAction("ОТМЕНА", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            mAdapter.restoreItem(order, position);
+                            mClientRecyclerView.scrollToPosition(position);
+                        }
+                    });
+
+                    snackbar.setActionTextColor(Color.YELLOW);
+                    snackbar.show();
+                } else {
+                    updateUI();
+                }
 
             }
         };
@@ -390,6 +410,37 @@ public class ClientMainFragment extends Fragment {
         }
         jsonWriter.endObject();
 //        jsonWriter.endObject(); // end root
+    }
+
+    public void setCodeResult(int code) {
+        codeResult = code;
+    }
+
+    public int getCodeResult() {
+        return codeResult;
+    }
+
+    private void sendDeleteOrder(APIInterface apiInterface, String code) {
+        mStatusLine.setText("");
+        setCodeResult(0);
+        Call<MultipleResource> call = apiInterface.sendDeleteOrder(code);
+        call.enqueue(new Callback<MultipleResource>() {
+            @Override
+            public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
+                int code = response.code();
+                setCodeResult(code);
+                if (code == 204) {
+                    mStatusLine.setText("Заявка удалена");
+                 } else {
+                    mStatusLine.setText("Заявку не получилось удалить");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<MultipleResource> call, Throwable t) {
+                mStatusLine.setText("Сервер не отвечает (failure)");
+            }
+        });
     }
 
     private void sendOrders(APIInterface apiInterface, String userName, List<Order> orders) {

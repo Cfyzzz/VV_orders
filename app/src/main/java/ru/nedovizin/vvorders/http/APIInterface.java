@@ -4,6 +4,7 @@ import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.PATCH;
@@ -30,4 +31,7 @@ public interface APIInterface {
 
     @GET("/OrdersAS/hs/db/get_status/{date}")
     Call<MultipleResource> doGetStatus(@Path("date") String date);
+
+    @DELETE("/OrdersAS/hs/db/delete_order/{code}")
+    Call<MultipleResource> sendDeleteOrder(@Path("code") String code);
 }
