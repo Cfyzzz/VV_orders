@@ -73,6 +73,7 @@ public class ClientLab {
     }
 
     public void addOrder(Order order, List<ProductItem> productItems) {
+        order.activity = "true";
         ContentValues values = getOrderValues(order);
         mDatabase.insert(OrderTable.NAME, null, values);
 
@@ -369,6 +370,7 @@ public class ClientLab {
 
     private static ContentValues getClientValues(Contragent client) {
         ContentValues values = new ContentValues();
+        // TODO - Почему всегда true?
         client.activity = "true";
         values.put(ClientTable.Cols.NAME, client.name);
         values.put(ClientTable.Cols.CODE, client.code);
@@ -378,6 +380,7 @@ public class ClientLab {
 
     private static ContentValues getAddressValues(Address address) {
         ContentValues values = new ContentValues();
+        // TODO - Почему всегда true?
         address.activity = "true";
         values.put(AddressTable.Cols.NAME, address.name);
         values.put(AddressTable.Cols.CODE, address.code);
@@ -387,6 +390,7 @@ public class ClientLab {
 
     private static ContentValues getProductValues(Product product) {
         ContentValues values = new ContentValues();
+        // TODO - Почему всегда true?
         product.activity = "true";
         values.put(ProductTable.Cols.NAME, product.name);
         values.put(ProductTable.Cols.CODE, product.code);

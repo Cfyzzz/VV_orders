@@ -16,6 +16,7 @@ public class OrderCursorWrapper extends CursorWrapper {
         String client = getString(getColumnIndex(ClientDbSchema.OrderTable.Cols.CLIENT));
         String address = getString(getColumnIndex(ClientDbSchema.OrderTable.Cols.ADDRESS));
         String status = getString(getColumnIndex(ClientDbSchema.OrderTable.Cols.STATUS));
+        String activity = getString(getColumnIndex(ClientDbSchema.OrderTable.Cols.ACTIVITY));
 
         Order order = new Order();
         order.code = code;
@@ -23,6 +24,7 @@ public class OrderCursorWrapper extends CursorWrapper {
         order.client = client;
         order.address = address;
         order.status = status;
+        order.activity = activity;
         return order;
     }
 }

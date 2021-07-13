@@ -161,9 +161,6 @@ public class ClientMainFragment extends Fragment {
                 APIInterface apiInterface;
                 apiInterface = APIClient.getData(URL_BASE).create(APIInterface.class);
                 sendOrders(apiInterface, LOGIN_BASE, orders);
-                updateOrderStatuses(apiInterface, mDateOrder);
-                mStatusLine.setText("Заявки отправлены на сервер");
-                updateUI();
             }
         });
 
@@ -207,7 +204,7 @@ public class ClientMainFragment extends Fragment {
         }
 
         private void updateViewStatusOrder(Order order) {
-            switch (order.status){
+            switch (order.status) {
                 case STATUS_ORDER_POSTED:
                     mStatus.setText("V");
                     mStatus.setTextColor(getResources().getColor(R.color.green));
@@ -304,11 +301,12 @@ public class ClientMainFragment extends Fragment {
                 order.selected = "true";
         }
 
+        mAdapter = null;
         if (mAdapter == null || mAdapter.getItemCount() != mOrders.size()) {
             mAdapter = new ClientsListAdapter(mOrders);
             mClientRecyclerView.setAdapter(mAdapter);
             enableSwipeToDeleteAndUndo();
-        } else  {
+        } else {
             mAdapter.notifyDataSetChanged();
         }
     }
@@ -321,34 +319,26 @@ public class ClientMainFragment extends Fragment {
                 final int position = viewHolder.getAdapterPosition();
                 final Order order = mAdapter.getData().get(position);
 
-                boolean isDeleteAvailable = true;
-                if (order.status!=null && !order.status.isEmpty()) {
+                if (order.status != null && !order.status.isEmpty()) {
                     APIInterface apiInterface;
                     apiInterface = APIClient.getData(URL_BASE).create(APIInterface.class);
                     sendDeleteOrder(apiInterface, order.code);
-                    isDeleteAvailable = getCodeResult() == 204;
                 }
 
-                if (isDeleteAvailable) {
+                mAdapter.removeItem(position);
 
-                    mAdapter.removeItem(position);
+                Snackbar snackbar = Snackbar
+                        .make(mActivityListBase, "Элемент был удалён из списка.", Snackbar.LENGTH_LONG);
+                snackbar.setAction("ОТМЕНА", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mAdapter.restoreItem(order, position);
+                        mClientRecyclerView.scrollToPosition(position);
+                    }
+                });
 
-                    Snackbar snackbar = Snackbar
-                            .make(mActivityListBase, "Элемент был удалён из списка.", Snackbar.LENGTH_LONG);
-                    snackbar.setAction("ОТМЕНА", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            mAdapter.restoreItem(order, position);
-                            mClientRecyclerView.scrollToPosition(position);
-                        }
-                    });
-
-                    snackbar.setActionTextColor(Color.YELLOW);
-                    snackbar.show();
-                } else {
-                    updateUI();
-                }
-
+                snackbar.setActionTextColor(Color.YELLOW);
+                snackbar.show();
             }
         };
 
@@ -420,24 +410,62 @@ public class ClientMainFragment extends Fragment {
         return codeResult;
     }
 
-    private void sendDeleteOrder(APIInterface apiInterface, String code) {
+    private void sendCancelDeleteOrder(APIInterface apiInterface, String codeOrder) {
         mStatusLine.setText("");
-        setCodeResult(0);
-        Call<MultipleResource> call = apiInterface.sendDeleteOrder(code);
+        Call<MultipleResource> call = apiInterface.sendCancelDeleteOrder(codeOrder);
         call.enqueue(new Callback<MultipleResource>() {
             @Override
             public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
-                int code = response.code();
-                setCodeResult(code);
-                if (code == 204) {
-                    mStatusLine.setText("Заявка удалена");
-                 } else {
-                    mStatusLine.setText("Заявку не получилось удалить");
+                if (response.code() != 200)
+                    return;
+                if (response.body().status.equals("Ok")) {
+                    Order order = ClientLab.get(getContext()).getOrder(codeOrder);
+                    ClientLab.get(getContext()).activateOrder(order);
+                    updateUI();
+                } else {
+                    mStatusLine.setText(response.body().description);
                 }
             }
 
             @Override
             public void onFailure(Call<MultipleResource> call, Throwable t) {
+                Log.d(TAG, "sendCancelDeleteOrder failure");
+            }
+        });
+    }
+
+    private void sendDeleteOrder(APIInterface apiInterface, String codeOrder) {
+        mStatusLine.setText("");
+        Call<MultipleResource> call = apiInterface.sendDeleteOrder(codeOrder);
+        call.enqueue(new Callback<MultipleResource>() {
+            @Override
+            public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
+                int code = response.code();
+                if (code == 204) {
+                    Order order = ClientLab.get(getContext()).getOrder(codeOrder);
+                    ClientLab.get(getContext()).inactivateOrder(order);
+                    updateUI();
+                    mStatusLine.setText("Заявка удалена");
+
+                    Snackbar snackbar = Snackbar
+                            .make(mActivityListBase, "Элемент был удалён из списка.", Snackbar.LENGTH_LONG);
+                    snackbar.setAction("ОТМЕНА", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            sendCancelDeleteOrder(apiInterface, codeOrder);
+                            mStatusLine.setText("");
+                        }
+                    });
+                    snackbar.setActionTextColor(Color.YELLOW);
+                    snackbar.show();
+                } else {
+                    mStatusLine.setText(response.body().description);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<MultipleResource> call, Throwable t) {
+                Log.d(TAG, "sendDeleteOrder failure");
                 mStatusLine.setText("Сервер не отвечает (failure)");
             }
         });
@@ -452,15 +480,17 @@ public class ClientMainFragment extends Fragment {
             public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
                 int code = response.code();
                 if (code == 201) {
-                    mStatusLine.setText("Заявки отправлены");
+                    updateOrderStatuses(apiInterface, mDateOrder);
+                    mStatusLine.setText("Заявки отправлены на сервер");
                 } else {
-                    mStatusLine.setText("Заявки не приняты сервером");
+                    mStatusLine.setText(response.body().description);
                 }
             }
 
             @Override
             public void onFailure(Call<MultipleResource> call, Throwable t) {
-                mStatusLine.setText("Сервер не отвечает (failure)");
+                Log.d(TAG, "sendOrders failure");
+                mStatusLine.setText("Сервер не отвечает (failure) " + t.getMessage());
             }
         });
     }
@@ -485,18 +515,21 @@ public class ClientMainFragment extends Fragment {
                             clientLab.updateOrder(order);
                         }
                     }
+                    updateUI();
                     mStatusLine.setText("Статусы заявок обновлены");
                 } else {
-                    mStatusLine.setText("Запрос на обновление статусов не принят сервером");
+                    mStatusLine.setText(response.body().description);
                 }
             }
 
             @Override
             public void onFailure(Call<MultipleResource> call, Throwable t) {
-                Log.d(TAG, "sendOrders failure");
+                Log.d(TAG, "updateOrderStatuses failure");
                 mStatusLine.setText("Сервер не отвечает (failure)");
             }
         });
-    };
+    }
+
+    ;
 
 }
