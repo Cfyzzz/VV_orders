@@ -326,19 +326,20 @@ public class ClientMainFragment extends Fragment {
                 }
 
                 mAdapter.removeItem(position);
-
-                Snackbar snackbar = Snackbar
-                        .make(mActivityListBase, "Элемент был удалён из списка.", Snackbar.LENGTH_LONG);
-                snackbar.setAction("ОТМЕНА", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        mAdapter.restoreItem(order, position);
-                        mClientRecyclerView.scrollToPosition(position);
-                    }
-                });
-
-                snackbar.setActionTextColor(Color.YELLOW);
-                snackbar.show();
+//
+//                Snackbar snackbar = Snackbar
+//                        .make(mActivityListBase, "Элемент был удалён из списка.", Snackbar.LENGTH_LONG);
+//                snackbar.setAction("ОТМЕНА", new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View view) {
+//                        mAdapter.restoreItem(order, position);
+//                        mClientRecyclerView.scrollToPosition(position);
+//                        sendCancelDeleteOrder(apiInterface, codeOrder);
+//                    }
+//                });
+//
+//                snackbar.setActionTextColor(Color.YELLOW);
+//                snackbar.show();
             }
         };
 

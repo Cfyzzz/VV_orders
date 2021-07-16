@@ -35,6 +35,6 @@ public interface APIInterface {
     @DELETE("/OrdersAS/hs/db/delete_order/{code}")
     Call<MultipleResource> sendDeleteOrder(@Path("code") String code);
 
-    @GET("/OrdersAS/hs/db/delete_order/{code}")
+    @GET("/OrdersAS/hs/db/cancel_delete_order/{code}")
     Call<MultipleResource> sendCancelDeleteOrder(@Path("code") String code);
 }
