@@ -16,7 +16,7 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/url_api"
+        android:hint="@string/url_api"
         android:id="@+id/connect_line_settings"/>
 
     <LinearLayout
@@ -46,6 +46,7 @@
 
         <EditText
             android:id="@+id/passwrd_settings"
+            android:inputType="textPassword"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="secret password"/>
@@ -55,13 +56,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:id="@+id/send_settings_button" />
+        android:id="@+id/save_settings_button"
+        android:text="@string/save_settings"/>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/status_settings"
-        android:hint="any message"/>
+        android:id="@+id/status_settings" />
 
     <Button
         android:id="@+id/update_clients"

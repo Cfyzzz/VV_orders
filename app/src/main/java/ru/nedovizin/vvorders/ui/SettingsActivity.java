@@ -1,6 +1,5 @@
 package ru.nedovizin.vvorders.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,7 +14,6 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import ru.nedovizin.vvorders.archive.ListActivity;
 import ru.nedovizin.vvorders.http.APIClient;
 import ru.nedovizin.vvorders.http.APIInterface;
 import ru.nedovizin.vvorders.R;
@@ -24,18 +22,20 @@ import ru.nedovizin.vvorders.models.Address;
 import ru.nedovizin.vvorders.models.ClientLab;
 import ru.nedovizin.vvorders.models.Contragent;
 import ru.nedovizin.vvorders.models.Product;
+import ru.nedovizin.vvorders.models.SettingsConnect;
 
 
 public class SettingsActivity extends AppCompatActivity {
 
     public String OK_STATUS = "Ok";
 
-    private Button mSendSettingsButton;
+    private Button mSaveSettingsButton;
     private Button mUpdateCleintsButton;
     private Button mUpdateProductsButton;
     private TextView mConnectlineTv;
     private TextView mSettingsStatus;
-    private EditText login;
+    private EditText mLogin;
+    private EditText mPasswrd;
     APIInterface apiInterface;
 
     private View mSettingsLayout;
@@ -46,14 +46,17 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-
         mSettingsLayout = findViewById(R.id.settings_layout);
         mConnectlineTv = findViewById(R.id.connect_line_settings);
-        login = findViewById(R.id.login_settings);
+        mLogin = findViewById(R.id.login_settings);
+        mPasswrd = findViewById(R.id.passwrd_settings);
         mSettingsStatus = findViewById(R.id.status_settings);
 
-        // TODO - убрать после отладки
-        login.setText("Елена");
+        // Установить настройки из базы
+        SettingsConnect settingsConnect = ClientLab.get(getBaseContext()).getSettingsConnect();
+        mConnectlineTv.setText(settingsConnect.getHost());
+        mLogin.setText(settingsConnect.getLogin());
+        mPasswrd.setText(settingsConnect.getPassword());
 
         mUpdateCleintsButton = findViewById(R.id.update_clients);
         mUpdateCleintsButton.setOnClickListener(new View.OnClickListener() {
@@ -61,7 +64,7 @@ public class SettingsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 mSettingsStatus.setText("");
                 String url_api = mConnectlineTv.getText().toString();
-                String userName = login.getText().toString();
+                String userName = mLogin.getText().toString();
                 apiInterface = APIClient.getData(url_api).create(APIInterface.class);
                 loadClients(userName);
             }
@@ -73,21 +76,24 @@ public class SettingsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 mSettingsStatus.setText("");
                 String url_api = mConnectlineTv.getText().toString();
-                String userName = login.getText().toString();
+                String userName = mLogin.getText().toString();
                 apiInterface = APIClient.getData(url_api).create(APIInterface.class);
                 loadProducts(userName);
             }
         });
 
-        // TODO - Тестовая кнопка
-        mSendSettingsButton = findViewById(R.id.send_settings_button);
-        mSendSettingsButton.setOnClickListener(new View.OnClickListener() {
+        mSaveSettingsButton = findViewById(R.id.save_settings_button);
+        mSaveSettingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO - это кнопка для тестов
-                // Открываем список клиентов в базе
-//                Intent intent = new Intent(getApplicationContext(), ListActivity.class);
-//                startActivity(intent);
+                String host = mConnectlineTv.getText().toString();
+                String login = mLogin.getText().toString();
+                String password = mPasswrd.getText().toString();
+
+                ClientLab.get(getBaseContext()).setSettingsConnect(
+                        new SettingsConnect(host, login, password)
+                );
+                mSettingsStatus.setText("Настройки сохранены");
             }
         });
     }

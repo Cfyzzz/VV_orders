@@ -19,4 +19,5 @@
     <string name="date_picker_title">Дата:</string>
     <string name="send_order_button">Отправить заявки</string>
     <string name="update_statuses">Обновить статусы заявок</string>
+    <string name="save_settings">Сохранить настройки</string>
 </resources>

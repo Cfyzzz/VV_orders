@@ -180,10 +180,11 @@ public class ClientLab {
     public SettingsConnect getSettingsConnect() {
         SettingsConnect settingsConnect = null;
         try (SettingsConnectCursorWrapper cursor = querySettingsConnect(null)) {
-            cursor.moveToFirst();
-            while(!cursor.isAfterLast()) {
+            if (cursor.moveToFirst()) {
                 settingsConnect = cursor.getSettings();
                 cursor.moveToNext();
+            } else {
+                settingsConnect = new SettingsConnect("http://localhost", "Empty", "");
             }
         }
         return settingsConnect;
