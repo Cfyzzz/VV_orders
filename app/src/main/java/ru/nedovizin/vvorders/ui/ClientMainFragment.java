@@ -530,7 +530,4 @@ public class ClientMainFragment extends Fragment {
             }
         });
     }
-
-    ;
-
 }

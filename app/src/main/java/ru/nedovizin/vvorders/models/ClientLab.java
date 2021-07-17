@@ -27,6 +27,7 @@ import ru.nedovizin.vvorders.database.ClientDbSchema.OrderTable;
 import ru.nedovizin.vvorders.database.OrderCursorWrapper;
 import ru.nedovizin.vvorders.database.ProductCursorWrapper;
 import ru.nedovizin.vvorders.database.ProductItemCursorWrapper;
+import ru.nedovizin.vvorders.database.SettingsConnectCursorWrapper;
 
 public class ClientLab {
 
@@ -58,16 +59,19 @@ public class ClientLab {
     }
 
     public void addClient(Contragent c) {
+        c.activity = "true";
         ContentValues values = getClientValues(c);
         mDatabase.insert(ClientTable.NAME, null, values);
     }
 
     public void addAddress(Address address) {
+        address.activity = "true";
         ContentValues values = getAddressValues(address);
         mDatabase.insert(AddressTable.NAME, null, values);
     }
 
     public void addProduct(Product product) {
+        product.activity = "true";
         ContentValues values = getProductValues(product);
         mDatabase.insert(ProductTable.NAME, null, values);
     }
@@ -171,6 +175,24 @@ public class ClientLab {
             cursor.moveToFirst();
             return cursor.getClient();
         }
+    }
+
+    public SettingsConnect getSettingsConnect() {
+        SettingsConnect settingsConnect = null;
+        try (SettingsConnectCursorWrapper cursor = querySettingsConnect(null)) {
+            cursor.moveToFirst();
+            while(!cursor.isAfterLast()) {
+                settingsConnect = cursor.getSettings();
+                cursor.moveToNext();
+            }
+        }
+        return settingsConnect;
+    }
+
+    public void setSettingsConnect(SettingsConnect settingsConnect) {
+        ContentValues values = getSettingsConnectValues(settingsConnect);
+        mDatabase.delete(ClientDbSchema.SettingsTable.NAME, null, null);
+        mDatabase.insert(ClientDbSchema.SettingsTable.NAME, null, values);
     }
 
     public void updateOrder(Order order) {
@@ -299,6 +321,19 @@ public class ClientLab {
         return new ProductItemCursorWrapper(cursor);
     }
 
+    public SettingsConnectCursorWrapper querySettingsConnect(String whereClause) {
+        Cursor cursor = mDatabase.query(
+                ClientDbSchema.SettingsTable.NAME,
+                null,
+                whereClause,
+                null,
+                null,
+                null,
+                null
+        );
+        return new SettingsConnectCursorWrapper(cursor);
+    }
+
     public List<Address> getAddressesByLikeName(String word) {
         List<Address> addresses = new ArrayList<>();
         Log.d(TAG, "current client: " + getCurrentClient());
@@ -370,8 +405,6 @@ public class ClientLab {
 
     private static ContentValues getClientValues(Contragent client) {
         ContentValues values = new ContentValues();
-        // TODO - Почему всегда true?
-        client.activity = "true";
         values.put(ClientTable.Cols.NAME, client.name);
         values.put(ClientTable.Cols.CODE, client.code);
         values.put(ClientTable.Cols.ACTIVITY, client.activity);
@@ -380,8 +413,6 @@ public class ClientLab {
 
     private static ContentValues getAddressValues(Address address) {
         ContentValues values = new ContentValues();
-        // TODO - Почему всегда true?
-        address.activity = "true";
         values.put(AddressTable.Cols.NAME, address.name);
         values.put(AddressTable.Cols.CODE, address.code);
         values.put(AddressTable.Cols.ACTIVITY, address.activity);
@@ -390,8 +421,6 @@ public class ClientLab {
 
     private static ContentValues getProductValues(Product product) {
         ContentValues values = new ContentValues();
-        // TODO - Почему всегда true?
-        product.activity = "true";
         values.put(ProductTable.Cols.NAME, product.name);
         values.put(ProductTable.Cols.CODE, product.code);
         values.put(ProductTable.Cols.WEIGHT, product.weight);
@@ -415,6 +444,14 @@ public class ClientLab {
         values.put(OrderTable.Cols.Products.CODE, code);
         values.put(OrderTable.Cols.Products.PRODUCT, productItem.product.name);
         values.put(OrderTable.Cols.Products.QUANTITY, productItem.quantity);
+        return values;
+    }
+
+    private static ContentValues getSettingsConnectValues(SettingsConnect settingsConnect) {
+        ContentValues values = new ContentValues();
+        values.put(ClientDbSchema.SettingsTable.Cols.HOST, settingsConnect.getHost());
+        values.put(ClientDbSchema.SettingsTable.Cols.LOGIN, settingsConnect.getLogin());
+        values.put(ClientDbSchema.SettingsTable.Cols.PASSWORD, settingsConnect.getPassword());
         return values;
     }
 }

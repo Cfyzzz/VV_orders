@@ -8,6 +8,7 @@ import ru.nedovizin.vvorders.database.ClientDbSchema.AddressTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.ClientTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.ProductTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.OrderTable;
+import ru.nedovizin.vvorders.database.ClientDbSchema.SettingsTable;
 
 public class ClientBaseHelper extends SQLiteOpenHelper {
     public static final int VERSION = 1;
@@ -23,20 +24,20 @@ public class ClientBaseHelper extends SQLiteOpenHelper {
                 ClientTable.Cols.CODE + ", " +
                 ClientTable.Cols.NAME + ", " +
                 ClientTable.Cols.ACTIVITY + ", " +
-                " unique(code) ON CONFLICT replace)"
+                " unique(" + ClientTable.Cols.CODE + ") ON CONFLICT replace)"
         );
         db.execSQL("create table " + AddressTable.NAME + "(" +
                 AddressTable.Cols.CODE + ", " +
                 AddressTable.Cols.NAME + ", " +
                 AddressTable.Cols.ACTIVITY + ", " +
-                "unique(code, name) ON CONFLICT replace)"
+                "unique(" + AddressTable.Cols.CODE +", " + AddressTable.Cols.NAME + ") ON CONFLICT replace)"
         );
         db.execSQL("create table " + ProductTable.NAME + "(" +
                 ProductTable.Cols.CODE + ", " +
                 ProductTable.Cols.NAME + ", " +
                 ProductTable.Cols.WEIGHT + ", " +
                 ProductTable.Cols.ACTIVITY + ", " +
-                " unique(code) ON CONFLICT replace)"
+                " unique(" + ProductTable.Cols.CODE + ") ON CONFLICT replace)"
         );
         db.execSQL("create table " + OrderTable.Cols.Products.NAME + "(" +
                 OrderTable.Cols.Products.CODE + ", " +
@@ -51,8 +52,13 @@ public class ClientBaseHelper extends SQLiteOpenHelper {
                 OrderTable.Cols.ADDRESS + ", " +
                 OrderTable.Cols.ACTIVITY + ", " +
                 OrderTable.Cols.STATUS + ", " +
-                " unique(code) ON CONFLICT replace)"
+                " unique(" + OrderTable.Cols.CODE + ") ON CONFLICT replace)"
         );
+        db.execSQL("create table " + SettingsTable.NAME + "(" +
+                SettingsTable.Cols.HOST + ", " +
+                SettingsTable.Cols.LOGIN + ", " +
+                SettingsTable.Cols.PASSWORD + ", " +
+                " unique(" + SettingsTable.Cols.LOGIN + ") ON CONFLICT replace)");
     }
 
     @Override

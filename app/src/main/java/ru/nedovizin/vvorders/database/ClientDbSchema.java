@@ -47,4 +47,13 @@ public class ClientDbSchema {
             }
         }
     }
+
+    public static final class SettingsTable {
+        public static final String NAME = "settings";
+        public static final class Cols {
+            public static final String HOST = "host";
+            public static final String LOGIN = "login";
+            public static final String PASSWORD = "password";
+        }
+    }
 }
