@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -45,6 +46,7 @@ import ru.nedovizin.vvorders.http.MultipleResource;
 import ru.nedovizin.vvorders.models.ClientLab;
 import ru.nedovizin.vvorders.models.Order;
 import ru.nedovizin.vvorders.models.OrdersForSend;
+import ru.nedovizin.vvorders.models.SettingsConnect;
 
 public class ClientMainFragment extends Fragment {
     private RecyclerView mClientRecyclerView;
@@ -71,6 +73,7 @@ public class ClientMainFragment extends Fragment {
     // TODO - Получать из конфигов
     public static final String URL_BASE = "http://192.168.0.182";
     public static final String LOGIN_BASE = "Елена";
+    private SettingsConnect mSettingsConnect;
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
@@ -363,6 +366,7 @@ public class ClientMainFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        mSettingsConnect = ClientLab.get(getContext()).getSettingsConnect();
         updateUI();
         Log.d(TAG, "Resume");
     }
@@ -413,121 +417,137 @@ public class ClientMainFragment extends Fragment {
 
     private void sendCancelDeleteOrder(APIInterface apiInterface, String codeOrder) {
         mStatusLine.setText("");
-        Call<MultipleResource> call = apiInterface.sendCancelDeleteOrder(codeOrder);
-        call.enqueue(new Callback<MultipleResource>() {
-            @Override
-            public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
-                if (response.code() != 200)
-                    return;
-                if (response.body().status.equals("Ok")) {
-                    Order order = ClientLab.get(getContext()).getOrder(codeOrder);
-                    ClientLab.get(getContext()).activateOrder(order);
-                    updateUI();
-                } else {
-                    mStatusLine.setText(response.body().description);
+        try {
+            Call<MultipleResource> call = apiInterface.sendCancelDeleteOrder(codeOrder, mSettingsConnect.getAuthBase64());
+            call.enqueue(new Callback<MultipleResource>() {
+                @Override
+                public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
+                    if (response.code() != 200)
+                        return;
+                    if (response.body().status.equals("Ok")) {
+                        Order order = ClientLab.get(getContext()).getOrder(codeOrder);
+                        ClientLab.get(getContext()).activateOrder(order);
+                        updateUI();
+                    } else {
+                        mStatusLine.setText(response.body().description);
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(Call<MultipleResource> call, Throwable t) {
-                Log.d(TAG, "sendCancelDeleteOrder failure");
-            }
-        });
+                @Override
+                public void onFailure(Call<MultipleResource> call, Throwable t) {
+                    Log.d(TAG, "sendCancelDeleteOrder failure");
+                }
+            });
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 
     private void sendDeleteOrder(APIInterface apiInterface, String codeOrder) {
         mStatusLine.setText("");
-        Call<MultipleResource> call = apiInterface.sendDeleteOrder(codeOrder);
-        call.enqueue(new Callback<MultipleResource>() {
-            @Override
-            public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
-                int code = response.code();
-                if (code == 204) {
-                    Order order = ClientLab.get(getContext()).getOrder(codeOrder);
-                    ClientLab.get(getContext()).inactivateOrder(order);
-                    updateUI();
-                    mStatusLine.setText("Заявка удалена");
+        try {
+            Call<MultipleResource> call = apiInterface.sendDeleteOrder(codeOrder, mSettingsConnect.getAuthBase64());
+            call.enqueue(new Callback<MultipleResource>() {
+                @Override
+                public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
+                    int code = response.code();
+                    if (code == 204) {
+                        Order order = ClientLab.get(getContext()).getOrder(codeOrder);
+                        ClientLab.get(getContext()).inactivateOrder(order);
+                        updateUI();
+                        mStatusLine.setText("Заявка удалена");
 
-                    Snackbar snackbar = Snackbar
-                            .make(mActivityListBase, "Элемент был удалён из списка.", Snackbar.LENGTH_LONG);
-                    snackbar.setAction("ОТМЕНА", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            sendCancelDeleteOrder(apiInterface, codeOrder);
-                            mStatusLine.setText("");
-                        }
-                    });
-                    snackbar.setActionTextColor(Color.YELLOW);
-                    snackbar.show();
-                } else {
-                    mStatusLine.setText(response.body().description);
+                        Snackbar snackbar = Snackbar
+                                .make(mActivityListBase, "Элемент был удалён из списка.", Snackbar.LENGTH_LONG);
+                        snackbar.setAction("ОТМЕНА", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                sendCancelDeleteOrder(apiInterface, codeOrder);
+                                mStatusLine.setText("");
+                            }
+                        });
+                        snackbar.setActionTextColor(Color.YELLOW);
+                        snackbar.show();
+                    } else {
+                        mStatusLine.setText(response.body().description);
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(Call<MultipleResource> call, Throwable t) {
-                Log.d(TAG, "sendDeleteOrder failure");
-                mStatusLine.setText("Сервер не отвечает (failure)");
-            }
-        });
+                @Override
+                public void onFailure(Call<MultipleResource> call, Throwable t) {
+                    Log.d(TAG, "sendDeleteOrder failure");
+                    mStatusLine.setText("Сервер не отвечает (failure)");
+                }
+            });
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 
     private void sendOrders(APIInterface apiInterface, String userName, List<Order> orders) {
         mStatusLine.setText("");
         OrdersForSend mOrdersForSend = new OrdersForSend(orders);
-        Call<MultipleResource> call = apiInterface.sendOrders(mOrdersForSend);
-        call.enqueue(new Callback<MultipleResource>() {
-            @Override
-            public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
-                int code = response.code();
-                if (code == 201) {
-                    updateOrderStatuses(apiInterface, mDateOrder);
-                    mStatusLine.setText("Заявки отправлены на сервер");
-                } else {
-                    mStatusLine.setText(response.body().description);
+        try {
+            Call<MultipleResource> call = apiInterface.sendOrders(mOrdersForSend, mSettingsConnect.getAuthBase64());
+            call.enqueue(new Callback<MultipleResource>() {
+                @Override
+                public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
+                    int code = response.code();
+                    if (code == 201) {
+                        updateOrderStatuses(apiInterface, mDateOrder);
+                        mStatusLine.setText("Заявки отправлены на сервер");
+                    } else {
+                        mStatusLine.setText(response.body().description);
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(Call<MultipleResource> call, Throwable t) {
-                Log.d(TAG, "sendOrders failure");
-                mStatusLine.setText("Сервер не отвечает (failure) " + t.getMessage());
-            }
-        });
+                @Override
+                public void onFailure(Call<MultipleResource> call, Throwable t) {
+                    Log.d(TAG, "sendOrders failure");
+                    mStatusLine.setText("Сервер не отвечает (failure) " + t.getMessage());
+                }
+            });
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 
     private void updateOrderStatuses(APIInterface apiInterface, Date date) {
         mStatusLine.setText("");
         String d = ClientLab.get(getContext()).DateToString(date);
         Log.d(TAG, ">> updateOrderStatuses Date: " + d);
-        Call<MultipleResource> call = apiInterface.doGetStatus(d);
-        call.enqueue(new Callback<MultipleResource>() {
-            @Override
-            public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
-                if (response.code() == 200) {
-                    mStatusLine.setText("");
-                    Log.d(TAG, response.body().toString());
-                    ClientLab clientLab = ClientLab.get(getContext());
-                    for (MultipleResource.StatusOrder statusOrder : response.body().answer.mStatusOrders) {
-                        Order order = clientLab.getOrder(statusOrder.code);
-                        if (order != null) {
-                            Log.d(TAG, "update status " + order.client + " is " + statusOrder.status);
-                            order.status = statusOrder.status;
-                            clientLab.updateOrder(order);
+        try {
+            Call<MultipleResource> call = apiInterface.doGetStatus(d, mSettingsConnect.getAuthBase64());
+            call.enqueue(new Callback<MultipleResource>() {
+                @Override
+                public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
+                    if (response.code() == 200) {
+                        mStatusLine.setText("");
+                        Log.d(TAG, response.body().toString());
+                        ClientLab clientLab = ClientLab.get(getContext());
+                        for (MultipleResource.StatusOrder statusOrder : response.body().answer.mStatusOrders) {
+                            Order order = clientLab.getOrder(statusOrder.code);
+                            if (order != null) {
+                                Log.d(TAG, "update status " + order.client + " is " + statusOrder.status);
+                                order.status = statusOrder.status;
+                                clientLab.updateOrder(order);
+                            }
                         }
+                        updateUI();
+                        mStatusLine.setText("Статусы заявок обновлены");
+                    } else {
+                        mStatusLine.setText(response.body().description);
                     }
-                    updateUI();
-                    mStatusLine.setText("Статусы заявок обновлены");
-                } else {
-                    mStatusLine.setText(response.body().description);
                 }
-            }
 
-            @Override
-            public void onFailure(Call<MultipleResource> call, Throwable t) {
-                Log.d(TAG, "updateOrderStatuses failure");
-                mStatusLine.setText("Сервер не отвечает (failure)");
-            }
-        });
+                @Override
+                public void onFailure(Call<MultipleResource> call, Throwable t) {
+                    Log.d(TAG, "updateOrderStatuses failure");
+                    mStatusLine.setText("Сервер не отвечает (failure)");
+                }
+            });
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 }

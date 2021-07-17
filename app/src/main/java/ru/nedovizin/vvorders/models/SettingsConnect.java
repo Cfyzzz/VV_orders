@@ -1,5 +1,9 @@
 package ru.nedovizin.vvorders.models;
 
+import android.util.Base64;
+
+import java.io.UnsupportedEncodingException;
+
 public class SettingsConnect {
     private String host;
     private String login;
@@ -33,5 +37,9 @@ public class SettingsConnect {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getAuthBase64() throws UnsupportedEncodingException {
+        return "Basic " + Base64.encodeToString((login + ":" + password).getBytes("UTF-8"), Base64.NO_WRAP);
     }
 }

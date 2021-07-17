@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import retrofit2.Call;
@@ -36,6 +37,7 @@ public class SettingsActivity extends AppCompatActivity {
     private TextView mSettingsStatus;
     private EditText mLogin;
     private EditText mPasswrd;
+    private SettingsConnect mSettingsConnect;
     APIInterface apiInterface;
 
     private View mSettingsLayout;
@@ -53,10 +55,10 @@ public class SettingsActivity extends AppCompatActivity {
         mSettingsStatus = findViewById(R.id.status_settings);
 
         // Установить настройки из базы
-        SettingsConnect settingsConnect = ClientLab.get(getBaseContext()).getSettingsConnect();
-        mConnectlineTv.setText(settingsConnect.getHost());
-        mLogin.setText(settingsConnect.getLogin());
-        mPasswrd.setText(settingsConnect.getPassword());
+        mSettingsConnect = ClientLab.get(getBaseContext()).getSettingsConnect();
+        mConnectlineTv.setText(mSettingsConnect.getHost());
+        mLogin.setText(mSettingsConnect.getLogin());
+        mPasswrd.setText(mSettingsConnect.getPassword());
 
         mUpdateCleintsButton = findViewById(R.id.update_clients);
         mUpdateCleintsButton.setOnClickListener(new View.OnClickListener() {
@@ -89,22 +91,31 @@ public class SettingsActivity extends AppCompatActivity {
                 String host = mConnectlineTv.getText().toString();
                 String login = mLogin.getText().toString();
                 String password = mPasswrd.getText().toString();
+                mSettingsConnect = new SettingsConnect(host, login, password);
 
-                ClientLab.get(getBaseContext()).setSettingsConnect(
-                        new SettingsConnect(host, login, password)
-                );
+                ClientLab.get(getBaseContext()).setSettingsConnect(mSettingsConnect);
                 mSettingsStatus.setText("Настройки сохранены");
             }
         });
     }
 
     private void loadProducts(String userName) {
-        Call<MultipleResource> call = apiInterface.doGetListProducts(userName);
+        Call<MultipleResource> call = null;
+        try {
+            call = apiInterface.doGetListProducts(userName, mSettingsConnect.getAuthBase64());
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         loadData(call);
     }
 
     private void loadClients(String userName) {
-        Call<MultipleResource> call = apiInterface.doGetListClients(userName);
+        Call<MultipleResource> call = null;
+        try {
+            call = apiInterface.doGetListClients(userName, mSettingsConnect.getAuthBase64());
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         loadData(call);
     }
 
