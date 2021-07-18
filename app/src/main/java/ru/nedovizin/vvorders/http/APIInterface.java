@@ -10,12 +10,16 @@ import retrofit2.http.Path;
 import ru.nedovizin.vvorders.models.OrdersForSend;
 
 
+/** Описание API интерфейса
+ *
+ */
 public interface APIInterface {
-    @GET("/OrdersAS/hs/db/update_clients/{name}")
-    Call<MultipleResource> doGetListClients(@Path("name") String name, @Header("Authorization") String auth);
+    @GET("/OrdersAS/hs/db/update_clients")
+    Call<MultipleResource> doGetListClients(@Header("Authorization") String auth);
 
-    @GET("/OrdersAS/hs/db/update_products/{name}")
-    Call<MultipleResource> doGetListProducts(@Path("name") String name, @Header("Authorization") String auth);
+    // TODO - Для получения продуктов не требуется имя менеджера
+    @GET("/OrdersAS/hs/db/update_products")
+    Call<MultipleResource> doGetListProducts(@Header("Authorization") String auth);
 
     @POST("/OrdersAS/hs/db/send_orders")
     Call<MultipleResource> sendOrders(@Body OrdersForSend orders, @Header("Authorization") String auth);

@@ -8,10 +8,7 @@ import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.util.Log;
 
-import com.google.gson.annotations.SerializedName;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -20,15 +17,18 @@ import ru.nedovizin.vvorders.database.AddressCursorWrapper;
 import ru.nedovizin.vvorders.database.ClientBaseHelper;
 import ru.nedovizin.vvorders.database.ClientCursorWrapper;
 import ru.nedovizin.vvorders.database.ClientDbSchema;
-import ru.nedovizin.vvorders.database.ClientDbSchema.ClientTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.AddressTable;
-import ru.nedovizin.vvorders.database.ClientDbSchema.ProductTable;
+import ru.nedovizin.vvorders.database.ClientDbSchema.ClientTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.OrderTable;
+import ru.nedovizin.vvorders.database.ClientDbSchema.ProductTable;
 import ru.nedovizin.vvorders.database.OrderCursorWrapper;
 import ru.nedovizin.vvorders.database.ProductCursorWrapper;
 import ru.nedovizin.vvorders.database.ProductItemCursorWrapper;
 import ru.nedovizin.vvorders.database.SettingsConnectCursorWrapper;
 
+/** Вспомогательный класс для работы с БД
+ *
+ */
 public class ClientLab {
 
     private static ClientLab sClientLab;
@@ -37,14 +37,27 @@ public class ClientLab {
     private String TAG = ".ClientLab";
     private Contragent mCurrentClient;
 
+    /** Получить текущего клиента
+     *
+     * @return
+     */
     public Contragent getCurrentClient() {
         return mCurrentClient;
     }
 
+    /** Установить текущего клиента
+     *
+     * @param currentClient
+     */
     public void setCurrentClient(Contragent currentClient) {
         mCurrentClient = currentClient;
     }
 
+    /** Получить объект {@code ClientLab}
+     *
+     * @param context
+     * @return
+     */
     public static ClientLab get(Context context) {
         if (sClientLab == null) {
             sClientLab = new ClientLab(context);
@@ -58,35 +71,57 @@ public class ClientLab {
                 .getWritableDatabase();
     }
 
+    /** Добавить контрагента в БД
+     *
+     * @param c Контрагент
+     */
     public void addClient(Contragent c) {
         c.activity = "true";
         ContentValues values = getClientValues(c);
         mDatabase.insert(ClientTable.NAME, null, values);
     }
 
+    /** Добавить адресс в БД
+     *
+     * @param address
+     */
     public void addAddress(Address address) {
         address.activity = "true";
         ContentValues values = getAddressValues(address);
         mDatabase.insert(AddressTable.NAME, null, values);
     }
 
+    /** Добавить продукт в БД
+     *
+     * @param product
+     */
     public void addProduct(Product product) {
         product.activity = "true";
         ContentValues values = getProductValues(product);
         mDatabase.insert(ProductTable.NAME, null, values);
     }
 
+    /** Добавить заявку в БД
+     *
+     * @param order Объект заявка
+     * @param productItems Продукты с количеством в заявке
+     */
     public void addOrder(Order order, List<ProductItem> productItems) {
         order.activity = "true";
         ContentValues values = getOrderValues(order);
         mDatabase.insert(OrderTable.NAME, null, values);
 
-        for (ProductItem item: productItems) {
+        for (ProductItem item : productItems) {
             ContentValues itemValuesalues = getOrderProductItemsValues(order.code, item);
             mDatabase.insert(OrderTable.Cols.Products.NAME, null, itemValuesalues);
         }
     }
 
+    /** Получить действующих контрагентов согласно шаблону
+     *
+     * @param word Шаблон, по которому ищутся контрагенты
+     * @return Список контрагентов
+     */
     public List<Contragent> getClientsByLikeName(String word) {
         List<Contragent> clients = new ArrayList<>();
         try (ClientCursorWrapper cursor = queryClients(ClientTable.Cols.NAME + " LIKE \'%" + word + "%\'" +
@@ -100,6 +135,10 @@ public class ClientLab {
         return clients;
     }
 
+    /** Получить всех действующих контрагентов
+     *
+     * @return
+     */
     public List<Contragent> getClients() {
         List<Contragent> client = new ArrayList<>();
         try (ClientCursorWrapper cursor = queryClients(ClientTable.Cols.ACTIVITY + "=\'true\'", null)) {
@@ -113,12 +152,17 @@ public class ClientLab {
         return client;
     }
 
+    /** Получить список имен контрагентов из заявок на дату {@code d}
+     *
+     * @param d Рабочая дата
+     * @return Список имен контрагентов
+     */
     public List<String> getClientsByDate(Date d) {
         List<String> clients = new ArrayList<>();
         String date = DateToString(d);
-        try (OrderCursorWrapper cursor = queryOrders(OrderTable.Cols.DATE+ "=\'" + date + "\'")) {
+        try (OrderCursorWrapper cursor = queryOrders(OrderTable.Cols.DATE + "=\'" + date + "\'")) {
             cursor.moveToFirst();
-            while(!cursor.isAfterLast()) {
+            while (!cursor.isAfterLast()) {
                 clients.add(cursor.getOrder().client);
                 cursor.moveToNext();
             }
@@ -126,8 +170,13 @@ public class ClientLab {
         return clients;
     }
 
+    /** Получить заявку по коду {@code code}
+     *
+     * @param code
+     * @return
+     */
     public Order getOrder(String code) {
-        try (OrderCursorWrapper cursor = queryOrders(OrderTable.Cols.CODE+ "= \'" + code + "\'")) {
+        try (OrderCursorWrapper cursor = queryOrders(OrderTable.Cols.CODE + "= \'" + code + "\'")) {
             if (cursor.getCount() == 0) {
                 return null;
             }
@@ -136,14 +185,19 @@ public class ClientLab {
         }
     }
 
+    /** Получить активные заявки на дату {@code d}
+     *
+     * @param d Рабочая дата
+     * @return Список заявок
+     */
     public List<Order> getOrdersByDate(Date d) {
         List<Order> orders = new ArrayList<>();
         String date = DateToString(d).split("T")[0];
         Log.d(TAG, "date: " + date);
-        try (OrderCursorWrapper cursor = queryOrders(OrderTable.Cols.DATE+ " LIKE \'" + date + "%\'"
+        try (OrderCursorWrapper cursor = queryOrders(OrderTable.Cols.DATE + " LIKE \'" + date + "%\'"
                 + " AND " + OrderTable.Cols.ACTIVITY + " = \'true\'")) {
             cursor.moveToFirst();
-            while(!cursor.isAfterLast()) {
+            while (!cursor.isAfterLast()) {
                 orders.add(cursor.getOrder());
                 cursor.moveToNext();
             }
@@ -151,12 +205,17 @@ public class ClientLab {
         return orders;
     }
 
+    /** Получить продукты завки по её коду {@code orderId}
+     *
+     * @param orderId Код заявки
+     * @return Список продуктов по заявке
+     */
     public List<ProductItem> getProductsByOrderId(String orderId) {
         List<ProductItem> productItems = new ArrayList<>();
         try (ProductItemCursorWrapper cursor = queryProductItems(
-                OrderTable.Cols.Products.CODE + " = \'" + orderId + "\'")) {
+                OrderTable.Cols.Products.pCols.CODE + " = \'" + orderId + "\'")) {
             cursor.moveToFirst();
-            while(!cursor.isAfterLast()) {
+            while (!cursor.isAfterLast()) {
                 // TODO - Оптимизировать через единый запрос
                 ProductItem productItem = cursor.getProductItem();
                 productItem.product = getProductsByLikeWords(productItem.product.name).get(0);
@@ -167,6 +226,11 @@ public class ClientLab {
         return productItems;
     }
 
+    /** Получть контрагента по коду {@code coe}
+     *
+     * @param code Код контрагента
+     * @return Контрагент
+     */
     public Contragent getClient(String code) {
         try (ClientCursorWrapper cursor = queryClients(ClientTable.Cols.CODE + " = ?", new String[]{code})) {
             if (cursor.getCount() == 0) {
@@ -177,6 +241,10 @@ public class ClientLab {
         }
     }
 
+    /** Получить настройки соединения из БД
+     *
+     * @return Настроки соединения в формате {@code SettingsConnect}
+     */
     public SettingsConnect getSettingsConnect() {
         SettingsConnect settingsConnect = null;
         try (SettingsConnectCursorWrapper cursor = querySettingsConnect(null)) {
@@ -190,41 +258,66 @@ public class ClientLab {
         return settingsConnect;
     }
 
+    /** Заисать настройки соединения в БД
+     *
+     * @param settingsConnect Настройки соединения
+     */
     public void setSettingsConnect(SettingsConnect settingsConnect) {
         ContentValues values = getSettingsConnectValues(settingsConnect);
         mDatabase.delete(ClientDbSchema.SettingsTable.NAME, null, null);
         mDatabase.insert(ClientDbSchema.SettingsTable.NAME, null, values);
     }
 
+    /** Обновить заявку в БД
+     *
+     * @param order Заявка
+     */
     public void updateOrder(Order order) {
         ContentValues values = getOrderValues(order);
         mDatabase.insert(OrderTable.NAME, null, values);
     }
 
+    /** Обновить контрагента в БД
+     *
+     * @param client Контрагент
+     */
     public void updateClient(Contragent client) {
         String code = client.code;
         ContentValues values = getClientValues(client);
         mDatabase.update(ClientTable.NAME, values, ClientTable.Cols.CODE + " = ?", new String[]{code});
     }
 
+    /** Всех контрагентов сделать неактивными в БД
+     *
+     */
     public void updateActivityToFalseAllClients() {
         ContentValues values = new ContentValues();
         values.put(ClientTable.Cols.ACTIVITY, "false");
-        mDatabase.update(ClientTable.NAME, values,null, null);
+        mDatabase.update(ClientTable.NAME, values, null, null);
     }
 
+    /** Все продукты в БД сделать неактивными
+     *
+     */
     public void updateActivityToFalseAllProducts() {
         ContentValues values = new ContentValues();
         values.put(ProductTable.Cols.ACTIVITY, "false");
-        mDatabase.update(ProductTable.NAME, values,null, null);
+        mDatabase.update(ProductTable.NAME, values, null, null);
     }
 
+    /** Все адреса в БД сделать неактивными
+     *
+     */
     public void updateActivityToFalseAllAddresses() {
         ContentValues values = new ContentValues();
         values.put(AddressTable.Cols.ACTIVITY, "false");
-        mDatabase.update(AddressTable.NAME, values,null, null);
+        mDatabase.update(AddressTable.NAME, values, null, null);
     }
 
+    /** Удалить заявку
+     *
+     * @param order Заявка
+     */
     public void deleteOrder(Order order) {
         clearProducts(order);
         mDatabase.delete(OrderTable.NAME,
@@ -232,13 +325,20 @@ public class ClientLab {
                 null);
     }
 
+    /** Очистить таблицу продуктов по заявке
+     *
+     * @param order Заявка
+     */
     public void clearProducts(Order order) {
-        // очистить таблицу продуктов в заявке
         mDatabase.delete(OrderTable.Cols.Products.NAME,
-                OrderTable.Cols.Products.CODE + "=\'" + order.code + "\'",
+                OrderTable.Cols.Products.pCols.CODE + "=\'" + order.code + "\'",
                 null);
     }
 
+    /** Сбросить активность заявки в БД
+     *
+     * @param order Заявка
+     */
     public void inactivateOrder(Order order) {
         order.activity = "false";
         ContentValues values = getOrderValues(order);
@@ -248,6 +348,10 @@ public class ClientLab {
                 null);
     }
 
+    /** Установить активность заявки в БД
+     *
+     * @param order
+     */
     public void activateOrder(Order order) {
         order.activity = "true";
         ContentValues values = getOrderValues(order);
@@ -256,6 +360,90 @@ public class ClientLab {
                 OrderTable.Cols.CODE + " = \'" + order.code + "\'",
                 null);
     }
+
+    /** Получить адреса по шаблону из БД
+     *
+     * @param word Шаблон
+     * @return Список адресов
+     */
+    public List<Address> getAddressesByLikeName(String word) {
+        List<Address> addresses = new ArrayList<>();
+        Log.d(TAG, "current client: " + getCurrentClient());
+        try (AddressCursorWrapper cursor = queryAddresses(AddressTable.Cols.NAME +
+                " LIKE \'%" + word + "%\' AND " +
+                AddressTable.Cols.CODE + "=\'" + getCurrentClient().code + "\'" +
+                " AND " + AddressTable.Cols.ACTIVITY + "=\'true\'", null)) {
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                Log.d(TAG, "Address.acivity = " + cursor.getAddress().activity);
+                addresses.add(cursor.getAddress());
+                cursor.moveToNext();
+            }
+        }
+        return addresses;
+    }
+
+    /** Получить адреса контрагента из БД
+     *
+     * @param client Контрагент
+     * @return Список адресов
+     */
+    public List<Address> getAddressesByClient(Contragent client) {
+        List<Address> addresses = new ArrayList<>();
+        try (AddressCursorWrapper cursor = queryAddresses(
+                AddressTable.Cols.CODE + "=\'" + client.code + "\'" +
+                        " AND " + AddressTable.Cols.ACTIVITY + "=\'true\'",
+                null)
+        ) {
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                addresses.add(cursor.getAddress());
+                cursor.moveToNext();
+            }
+        }
+        return addresses;
+    }
+
+    /** Получить продукты по шаблону из БД
+     *
+     * @param word Шаблон для сопоставления наименования продуктов
+     * @return Список продуктов
+     */
+    public List<Product> getProductsByLikeWords(String word) {
+        String[] words = word.trim().split(" ");
+        for (int i = 0; i < words.length; i++) {
+            words[i] = "%" + words[i] + "%";
+        }
+        word = TextUtils.join("", words);
+        List<Product> products = new ArrayList<>();
+        try (ProductCursorWrapper cursor = queryProducts(
+                ProductTable.Cols.NAME + " LIKE \'" + word + "\'" +
+                        " AND " + ProductTable.Cols.ACTIVITY + "=\'true\'",
+                null
+        )
+        ) {
+            cursor.moveToFirst();
+            int count = 0;
+            while (!cursor.isAfterLast()) {
+                products.add(cursor.getProduct());
+                cursor.moveToNext();
+                count++;
+                if (count > 2) break;
+            }
+        }
+        return products;
+    }
+
+    /** Преобразовать дату в строку по единому правилу
+     *
+     * @param date Дата
+     * @return Строка с датой в едином формате
+     */
+    public String DateToString(Date date) {
+        return DateFormat.format("yyyy-MM-ddThh:mm:ss", date).toString();
+    }
+
+    // БЛОК СЛУЖЕБНЫХ МЕТОДОВ
 
     private ClientCursorWrapper queryClients(String whereClause, String[] whereArgs) {
         Cursor cursor = mDatabase.query(
@@ -312,12 +500,12 @@ public class ClientLab {
     private ProductItemCursorWrapper queryProductItems(String whereClause) {
         Cursor cursor = mDatabase.query(
                 OrderTable.Cols.Products.NAME,
-                    null,
-                    whereClause,
-                    null,
-                    null,
-                    null,
-                    null
+                null,
+                whereClause,
+                null,
+                null,
+                null,
+                null
         );
         return new ProductItemCursorWrapper(cursor);
     }
@@ -333,75 +521,6 @@ public class ClientLab {
                 null
         );
         return new SettingsConnectCursorWrapper(cursor);
-    }
-
-    public List<Address> getAddressesByLikeName(String word) {
-        List<Address> addresses = new ArrayList<>();
-        Log.d(TAG, "current client: " + getCurrentClient());
-        try (AddressCursorWrapper cursor = queryAddresses(AddressTable.Cols.NAME +
-                " LIKE \'%" + word + "%\' AND " +
-                AddressTable.Cols.CODE + "=\'" + getCurrentClient().code + "\'" +
-                " AND " + AddressTable.Cols.ACTIVITY + "=\'true\'", null)) {
-            cursor.moveToFirst();
-            while (!cursor.isAfterLast()) {
-                Log.d(TAG, "Address.acivity = " + cursor.getAddress().activity);
-                addresses.add(cursor.getAddress());
-                cursor.moveToNext();
-            }
-        }
-        return addresses;
-    }
-
-    public List<Address> getAddressesByClient(Contragent client) {
-        List<Address> addresses = new ArrayList<>();
-        Log.d(TAG, "current client: " + getCurrentClient());
-        try (AddressCursorWrapper cursor = queryAddresses(
-                AddressTable.Cols.CODE + "=\'" + client.code + "\'" +
-                        " AND " + AddressTable.Cols.ACTIVITY + "=\'true\'",
-                null)
-        ) {
-            Log.d(TAG, "Entry in cycle...");
-            cursor.moveToFirst();
-            while (!cursor.isAfterLast()) {
-                Log.d(TAG, "Address.acivity = " + cursor.getAddress().activity);
-                addresses.add(cursor.getAddress());
-                cursor.moveToNext();
-            }
-        }
-        Log.d(TAG, "count adresses: " + addresses.size());
-        return addresses;
-    }
-
-    public List<Product> getProductsByLikeWords(String word) {
-        String[] words = word.trim().split(" ");
-        for (int i = 0; i < words.length; i++) {
-            words[i] = "%" + words[i] + "%";
-        }
-        word = TextUtils.join("", words);
-        List<Product> products = new ArrayList<>();
-        Log.d(TAG, "input words: " + word);
-        try (ProductCursorWrapper cursor = queryProducts (
-                ProductTable.Cols.NAME + " LIKE \'" + word + "\'" +
-                        " AND " + ProductTable.Cols.ACTIVITY + "=\'true\'",
-                null
-            )
-        ) {
-            cursor.moveToFirst();
-            int count = 0;
-            while (!cursor.isAfterLast()) {
-                Log.d(TAG, "Product.acivity = " + cursor.getProduct().activity);
-                products.add(cursor.getProduct());
-                cursor.moveToNext();
-                count++;
-                if (count > 2) break;
-            }
-        }
-        Log.d(TAG, "count products: " + products.size());
-        return products;
-    }
-
-    public String DateToString(Date date) {
-        return DateFormat.format("yyyy-MM-ddThh:mm:ss", date).toString();
     }
 
     private static ContentValues getClientValues(Contragent client) {
@@ -442,9 +561,9 @@ public class ClientLab {
 
     private static ContentValues getOrderProductItemsValues(String code, ProductItem productItem) {
         ContentValues values = new ContentValues();
-        values.put(OrderTable.Cols.Products.CODE, code);
-        values.put(OrderTable.Cols.Products.PRODUCT, productItem.product.name);
-        values.put(OrderTable.Cols.Products.QUANTITY, productItem.quantity);
+        values.put(OrderTable.Cols.Products.pCols.CODE, code);
+        values.put(OrderTable.Cols.Products.pCols.PRODUCT, productItem.product.name);
+        values.put(OrderTable.Cols.Products.pCols.QUANTITY, productItem.quantity);
         return values;
     }
 

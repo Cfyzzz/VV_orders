@@ -4,6 +4,9 @@ import android.util.Base64;
 
 import java.io.UnsupportedEncodingException;
 
+/** Описание настроек
+ *
+ */
 public class SettingsConnect {
     private String host;
     private String login;

@@ -14,7 +14,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -23,11 +22,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.zip.Inflater;
 
 import ru.nedovizin.vvorders.AddressAutoCompleteAdapter;
 import ru.nedovizin.vvorders.ClientAutoCompleteAdapter;
@@ -40,6 +37,9 @@ import ru.nedovizin.vvorders.models.ClientLab;
 import ru.nedovizin.vvorders.models.Contragent;
 import ru.nedovizin.vvorders.models.Order;
 
+/** Окно редактирования заявки (Фрагмент)
+ *
+ */
 public class OrderFragment extends Fragment {
     public static final String ARG_ORDER_ID = "order_id";
     public static final String EXTRA_DATE = "Date";
@@ -51,7 +51,6 @@ public class OrderFragment extends Fragment {
     private View mOrderActivityBase;
     private Order mOrder;
     private Button mSaveOrderButton;
-    private final String ARG_PRODUCT_POSITION = "ru.nedovizin.criminalintent.CrimeListFragment.ARG_PRODUCT_POSITION";
     private final String TAG = ".OrderFragment";
 
     @Override
@@ -61,7 +60,12 @@ public class OrderFragment extends Fragment {
         mOrder = ClientLab.get(getActivity()).getOrder(orderId);
     }
 
-    public static  OrderFragment newInstance(String orderId) {
+    /** Получить настроенный фрагмент окна редактирования заявки
+     *
+     * @param orderId Поле код {@code code} заявки
+     * @return
+     */
+    public static OrderFragment newInstance(String orderId) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_ORDER_ID, orderId);
 
@@ -89,13 +93,14 @@ public class OrderFragment extends Fragment {
             addressTitle.setText(mOrder.address);
 
             // Блокируем элементы, если заявка имеет статус (значит она уже отправлена на сервер)
-            if (mOrder.status != null && !mOrder.status.isEmpty()) {
+            if (mOrder.hasStatusSent()) {
                 mProductReclerView.setEnabled(false);
                 addressTitle.setEnabled(false);
                 clientTitle.setEnabled(false);
                 productTitle.setEnabled(false);
             }
         } else {
+            // На случай новой заявки
             mOrder = new Order();
             mOrder.client = clientTitle.getText().toString();
             Date date = (Date) getArguments().getSerializable(EXTRA_DATE);
@@ -111,12 +116,12 @@ public class OrderFragment extends Fragment {
         mSaveOrderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Сохранить заявку
                 mOrder.client = clientTitle.getText().toString();
                 mOrder.address = addressTitle.getText().toString();
                 mClientLab.clearProducts(mOrder);
                 mClientLab.addOrder(mOrder, mProducts);
                 getActivity().finish();
-//                getActivity().onBackPressed();
             }
         });
 
@@ -126,6 +131,7 @@ public class OrderFragment extends Fragment {
         clientTitle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                // Выбор клиента из предложенного списка
                 Contragent client = (Contragent) adapterView.getItemAtPosition(position);
                 clientTitle.setText(client.name);
                 addressTitle.requestFocus();
@@ -145,6 +151,7 @@ public class OrderFragment extends Fragment {
         addressTitle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                // Выбор адреса из предложенного списка
                 Address address = (Address) adapterView.getItemAtPosition(position);
                 addressTitle.setText(address.name);
                 productTitle.requestFocus();
@@ -156,6 +163,7 @@ public class OrderFragment extends Fragment {
         productTitle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                // Выбор продукта из предложенного списка
                 ProductItem productItem = (ProductItem) adapterView.getItemAtPosition(position);
                 mProducts.add(productItem);
                 productTitle.setText("");
@@ -172,6 +180,9 @@ public class OrderFragment extends Fragment {
         updateUI();
     }
 
+    /** Обновение UI
+     *
+     */
     private void updateUI() {
         if (mAdapter == null) {
             Log.d(TAG, "updateUI mAdapter == null");
@@ -185,6 +196,9 @@ public class OrderFragment extends Fragment {
         Log.d(TAG, "quantity products: " + Integer.toString(mProducts.size()));
     }
 
+    /** Подключение интерфейса удаление элемента свайпом влево
+     *
+     */
     private void enableSwipeToDeleteAndUndo() {
         SwipeToDeleteCallback swipeToDeleteCallback = new SwipeToDeleteCallback(getContext()) {
             @Override
@@ -200,6 +214,7 @@ public class OrderFragment extends Fragment {
                 snackbar.setAction("ОТМЕНА", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        // Восстановление удаленной позиции в списке продуктов
                         mAdapter.restoreItem(item, position);
                         mProductReclerView.scrollToPosition(position);
                     }
@@ -229,7 +244,11 @@ public class OrderFragment extends Fragment {
             itemView.setOnClickListener(this);
         }
 
-        public void bind(ProductItem productItem, int position) {
+        /** Связь продукта с UI
+         *
+         * @param productItem Строка продукта с количеством
+         */
+        public void bind(ProductItem productItem) {
             mProduct = productItem;
             mNameProduct.setText(productItem.product.name);
             mQuantityProducts.setText(productItem.quantity);
@@ -255,14 +274,13 @@ public class OrderFragment extends Fragment {
             //Настраиваем отображение поля для ввода текста в открытом диалоге:
             final EditText userInput = (EditText) promptsView.findViewById(R.id.input_text);
             userInput.setText(mProduct.quantity);
-//            userInput.setSelection(0, mProduct.quantity.length());
 
             //Настраиваем сообщение в диалоговом окне:
             mDialogBuilder
                     .setCancelable(false)
                     .setPositiveButton("OK",
                             new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog,int id) {
+                                public void onClick(DialogInterface dialog, int id) {
                                     //Вводим текст и отображаем в строке ввода на основном экране:
                                     mProduct.quantity = userInput.getText().toString();
                                     updateUI();
@@ -270,7 +288,7 @@ public class OrderFragment extends Fragment {
                             })
                     .setNegativeButton("Отмена",
                             new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog,int id) {
+                                public void onClick(DialogInterface dialog, int id) {
                                     dialog.cancel();
                                 }
                             });
@@ -302,7 +320,7 @@ public class OrderFragment extends Fragment {
         @Override
         public void onBindViewHolder(OrderFragment.ProductHolder holder, int position) {
             ProductItem product = data.get(position);
-            holder.bind(product, position);
+            holder.bind(product);
         }
 
         @Override

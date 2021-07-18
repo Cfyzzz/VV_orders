@@ -15,6 +15,9 @@ import java.util.List;
 import ru.nedovizin.vvorders.models.Address;
 import ru.nedovizin.vvorders.models.ClientLab;
 
+/** Вспомогательный класс для подбора адресов
+ *
+ */
 public class AddressAutoCompleteAdapter extends BaseAdapter implements Filterable {
 
     private final Context mContext;

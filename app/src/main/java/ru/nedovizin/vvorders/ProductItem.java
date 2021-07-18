@@ -2,6 +2,9 @@ package ru.nedovizin.vvorders;
 
 import ru.nedovizin.vvorders.models.Product;
 
+/** Описателный класс продукта и количества
+ *
+ */
 public class ProductItem {
     public Product product;
     public String quantity;

@@ -12,7 +12,6 @@ import androidx.viewpager.widget.ViewPager;
 
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import ru.nedovizin.vvorders.R;
 import ru.nedovizin.vvorders.models.ClientLab;
@@ -25,6 +24,13 @@ public class OrderPagerActivity extends AppCompatActivity {
     private ViewPager mViewPager;
     private List<Order> mOrders;
 
+    /** Получить настроенный интент активности
+     *
+     * @param packageContext Текущий контекст
+     * @param orderId Поле код {@code code} текущей заявки
+     * @param date Рабочая дата
+     * @return Настроенный интент активности
+     */
     public static Intent newIntent(Context packageContext, String orderId, Date date) {
         Intent intent = new Intent(packageContext, OrderPagerActivity.class);
         intent.putExtra(EXTRA_ORDER_ID, orderId);
@@ -46,9 +52,10 @@ public class OrderPagerActivity extends AppCompatActivity {
         mViewPager.setAdapter(new FragmentStatePagerAdapter(fragmentManager, FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
             @Override
             public Fragment getItem(int position) {
-                 Order order = mOrders.get(position);
-                 return OrderFragment.newInstance(order.code);
+                Order order = mOrders.get(position);
+                return OrderFragment.newInstance(order.code);
             }
+
             @Override
             public int getCount() {
                 return mOrders.size();

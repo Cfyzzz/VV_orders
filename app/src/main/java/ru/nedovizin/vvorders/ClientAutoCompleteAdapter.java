@@ -15,25 +15,13 @@ import java.util.List;
 import ru.nedovizin.vvorders.models.ClientLab;
 import ru.nedovizin.vvorders.models.Contragent;
 
+/** Вспомогательный класс для подбора контрагентов
+ *
+ */
 public class ClientAutoCompleteAdapter extends BaseAdapter implements Filterable {
-
-    private static final int MAX_RESULTS = 10;
 
     private final Context mContext;
     private List<Contragent> mResults;
-
-//    private ServiceConnection mServiceConnection = new ServiceConnection() {
-//        @Override
-//        public void onServiceConnected(ComponentName name, IBinder service) {
-//            ClientsService.MyBinder binder = (ClientsService.MyBinder) service;
-//            ClientsService clientsService = binder.getService();
-//        }
-//
-//        @Override
-//        public void onServiceDisconnected(ComponentName name) {
-//
-//        }
-//    };
 
     public ClientAutoCompleteAdapter(Context context) {
         mContext = context;
@@ -104,6 +92,3 @@ public class ClientAutoCompleteAdapter extends BaseAdapter implements Filterable
         return clients;
     }
 }
-
-
-// ref: https://habr.com/ru/post/243853/

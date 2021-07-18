@@ -12,8 +12,8 @@ public class ProductItemCursorWrapper extends CursorWrapper {
     }
 
     public ProductItem getProductItem() {
-        String name = getString(getColumnIndex(ClientDbSchema.OrderTable.Cols.Products.PRODUCT));
-        String quantity = getString(getColumnIndex(ClientDbSchema.OrderTable.Cols.Products.QUANTITY));
+        String name = getString(getColumnIndex(ClientDbSchema.OrderTable.Cols.Products.pCols.PRODUCT));
+        String quantity = getString(getColumnIndex(ClientDbSchema.OrderTable.Cols.Products.pCols.QUANTITY));
 
         ProductItem productItem = new ProductItem();
         Product product = new Product();

@@ -15,9 +15,9 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import ru.nedovizin.vvorders.R;
 import ru.nedovizin.vvorders.http.APIClient;
 import ru.nedovizin.vvorders.http.APIInterface;
-import ru.nedovizin.vvorders.R;
 import ru.nedovizin.vvorders.http.MultipleResource;
 import ru.nedovizin.vvorders.models.Address;
 import ru.nedovizin.vvorders.models.ClientLab;
@@ -38,8 +38,7 @@ public class SettingsActivity extends AppCompatActivity {
     private EditText mLogin;
     private EditText mPasswrd;
     private SettingsConnect mSettingsConnect;
-    APIInterface apiInterface;
-
+    private APIInterface apiInterface;
     private View mSettingsLayout;
     private static final String TAG = ".SettingsActivity";
 
@@ -64,11 +63,11 @@ public class SettingsActivity extends AppCompatActivity {
         mUpdateCleintsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Обновить клиентов из Базы
                 mSettingsStatus.setText("");
                 String url_api = mConnectlineTv.getText().toString();
-                String userName = mLogin.getText().toString();
                 apiInterface = APIClient.getData(url_api).create(APIInterface.class);
-                loadClients(userName);
+                loadClients();
             }
         });
 
@@ -76,11 +75,11 @@ public class SettingsActivity extends AppCompatActivity {
         mUpdateProductsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Обновить список продуктов из базы
                 mSettingsStatus.setText("");
                 String url_api = mConnectlineTv.getText().toString();
-                String userName = mLogin.getText().toString();
                 apiInterface = APIClient.getData(url_api).create(APIInterface.class);
-                loadProducts(userName);
+                loadProducts();
             }
         });
 
@@ -88,6 +87,7 @@ public class SettingsActivity extends AppCompatActivity {
         mSaveSettingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Сохранить настройки в базе
                 String host = mConnectlineTv.getText().toString();
                 String login = mLogin.getText().toString();
                 String password = mPasswrd.getText().toString();
@@ -99,36 +99,38 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
-    private void loadProducts(String userName) {
-        Call<MultipleResource> call = null;
+    /** Загрузить с AS список продуктов
+     *
+     */
+    private void loadProducts() {
         try {
-            call = apiInterface.doGetListProducts(userName, mSettingsConnect.getAuthBase64());
+            Call<MultipleResource> call = apiInterface.doGetListProducts(mSettingsConnect.getAuthBase64());
+            loadData(call);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        loadData(call);
     }
 
-    private void loadClients(String userName) {
-        Call<MultipleResource> call = null;
+    /** Загрузить с AS список клиентов данного менеджера
+     *
+     */
+    private void loadClients() {
         try {
-            call = apiInterface.doGetListClients(userName, mSettingsConnect.getAuthBase64());
+            Call<MultipleResource> call = apiInterface.doGetListClients(mSettingsConnect.getAuthBase64());
+            loadData(call);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        loadData(call);
     }
 
+    /** Загрузить данные с AS: клиенты, адреса, продукты
+     *
+     * @param call
+     */
     private void loadData(Call<MultipleResource> call) {
-        /*
-         GET List Resources
-         **/
         call.enqueue(new Callback<MultipleResource>() {
             @Override
             public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
-//              // TODO - Нужно убрать response.body(), чтобы не сыпать в логи тело ответа
-                Log.d(TAG, response.code() + " " + response.body());
-
                 if (response.code() == 200) {
 
                     MultipleResource resource = response.body();
@@ -176,7 +178,7 @@ public class SettingsActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<MultipleResource> call, Throwable t) {
-                mSettingsStatus.setText("Ошибка соединения (Failure): ");
+                mSettingsStatus.setText("Ошибка соединения (Failure): " + TAG);
             }
         });
     }

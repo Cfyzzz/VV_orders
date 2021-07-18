@@ -1,7 +1,6 @@
 package ru.nedovizin.vvorders;
 
 import android.content.Context;
-import android.os.Build;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,17 +10,16 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.TextView;
 
-import androidx.annotation.RequiresApi;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import ru.nedovizin.vvorders.models.ClientLab;
 import ru.nedovizin.vvorders.models.Product;
 
+/** Вспомогательный класс для подбора продуктов
+ *
+ */
 public class ProductAutoCompleteAdapter extends BaseAdapter implements Filterable {
 
     private final Context mContext;
@@ -83,7 +81,8 @@ public class ProductAutoCompleteAdapter extends BaseAdapter implements Filterabl
                 } else {
                     notifyDataSetInvalidated();
                 }
-            }};
+            }
+        };
 
         return filter;
     }

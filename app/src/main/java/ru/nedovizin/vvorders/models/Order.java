@@ -7,6 +7,9 @@ import java.util.List;
 
 import ru.nedovizin.vvorders.ProductItem;
 
+/** Описание заявки
+ *
+ */
 public class Order {
     @SerializedName("Код")
     public String code;
@@ -38,6 +41,10 @@ public class Order {
         public String quantity;
     }
 
+    /** Записть таблицу продуктов в заявку
+     *
+     * @param products Таблица продуктов с количеством
+     */
     public void setProducts(List<ProductItem> products) {
         nomenclaturaItems = new ArrayList<>();
         int i = 1;
@@ -48,5 +55,14 @@ public class Order {
             nItem.quantity = pItem.quantity;
             nomenclaturaItems.add(nItem);
         }
+    }
+
+    /** Имеет ли заявка статус отправленной на сервер
+     *
+     * @return {@code true} - заявка уже отправлена на сервер; <br>{@code false} - на сервере нет этой заявки
+     */
+    public boolean hasStatusSent() {
+        if (status == null) status = "";
+        return !status.isEmpty();
     }
 }

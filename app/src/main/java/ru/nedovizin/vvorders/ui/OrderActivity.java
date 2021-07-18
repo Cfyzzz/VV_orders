@@ -37,6 +37,9 @@ import ru.nedovizin.vvorders.models.ClientLab;
 import ru.nedovizin.vvorders.models.Contragent;
 import ru.nedovizin.vvorders.models.Order;
 
+/** Окно для ввода новой заявки (Активность)
+ *
+ */
 public class OrderActivity extends MenuActivity {
 
     private ClientLab mClientLab;
@@ -45,7 +48,6 @@ public class OrderActivity extends MenuActivity {
     private List<ProductItem> mProducts;
     private View mOrderActivityBase;
     private Button mSaveOrderButton;
-    private final String ARG_PRODUCT_POSITION = "ru.nedovizin.criminalintent.CrimeListFragment.ARG_PRODUCT_POSITION";
     private final String TAG = ".OrderActivity";
 
     public static final String EXTRA_DATE = "Date";
@@ -71,15 +73,14 @@ public class OrderActivity extends MenuActivity {
         mSaveOrderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Сохранить заявку и закрыть окно
                 Order order = new Order();
                 order.client = clientTitle.getText().toString();
                 order.address = addressTitle.getText().toString();
                 Date date = (Date) getIntent().getSerializableExtra(EXTRA_DATE);
                 order.date = mClientLab.DateToString(date);
                 order.code = UUID.randomUUID().toString();
-                Log.d(TAG, "address: " + order.address);
                 mClientLab.addOrder(order, mProducts);
-                // TODO - Закрыть окно и обновить (!) список заявок
                 finish();
             }
         });
@@ -90,6 +91,7 @@ public class OrderActivity extends MenuActivity {
         clientTitle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                // Выбор варианта из клиентов
                 Contragent client = (Contragent) adapterView.getItemAtPosition(position);
                 clientTitle.setText(client.name);
                 addressTitle.requestFocus();
@@ -109,6 +111,7 @@ public class OrderActivity extends MenuActivity {
         addressTitle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                // Выбор варианта из адресов
                 Address address = (Address) adapterView.getItemAtPosition(position);
                 addressTitle.setText(address.name);
                 productTitle.requestFocus();
@@ -120,6 +123,7 @@ public class OrderActivity extends MenuActivity {
         productTitle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                // Выбор варианта из продукции
                 ProductItem productItem = (ProductItem) adapterView.getItemAtPosition(position);
                 mProducts.add(productItem);
                 productTitle.setText("");
@@ -134,19 +138,23 @@ public class OrderActivity extends MenuActivity {
         updateUI();
     }
 
+    /** Обновить UI заявки
+     *
+     */
     private void updateUI() {
         if (mAdapter == null) {
-            Log.d(TAG, "updateUI mAdapter == null");
             mAdapter = new ProductListAdapter(mProducts);
             mProductReclerView.setAdapter(mAdapter);
             enableSwipeToDeleteAndUndo();
         } else {
-            Log.d(TAG, "updateUI mAdapter != null");
             mAdapter.notifyDataSetChanged();
         }
         Log.d(TAG, "quantity products: " + Integer.toString(mProducts.size()));
     }
 
+    /** Подключить интерфейс удаления свайпом влево
+     *
+     */
     private void enableSwipeToDeleteAndUndo() {
         SwipeToDeleteCallback swipeToDeleteCallback = new SwipeToDeleteCallback(this) {
             @Override
@@ -221,7 +229,7 @@ public class OrderActivity extends MenuActivity {
                     .setCancelable(false)
                     .setPositiveButton("OK",
                             new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog,int id) {
+                                public void onClick(DialogInterface dialog, int id) {
                                     //Вводим текст и отображаем в строке ввода на основном экране:
                                     mProduct.quantity = userInput.getText().toString();
                                     updateUI();
@@ -229,7 +237,7 @@ public class OrderActivity extends MenuActivity {
                             })
                     .setNegativeButton("Отмена",
                             new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog,int id) {
+                                public void onClick(DialogInterface dialog, int id) {
                                     dialog.cancel();
                                 }
                             });

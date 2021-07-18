@@ -7,6 +7,9 @@ import ru.nedovizin.vvorders.models.Address;
 import ru.nedovizin.vvorders.models.Contragent;
 import ru.nedovizin.vvorders.models.Product;
 
+/** Класс для получения ответов от AS
+ *
+ */
 public class MultipleResource {
     @SerializedName("status")
     public String status;
@@ -33,6 +36,3 @@ public class MultipleResource {
         public String status;
     }
 }
-
-
-// https://www.journaldev.com/13639/retrofit-android-example-tutorial

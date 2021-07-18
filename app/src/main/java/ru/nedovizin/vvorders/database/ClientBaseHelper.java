@@ -10,6 +10,9 @@ import ru.nedovizin.vvorders.database.ClientDbSchema.ProductTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.OrderTable;
 import ru.nedovizin.vvorders.database.ClientDbSchema.SettingsTable;
 
+/** Создание БД
+ *
+ */
 public class ClientBaseHelper extends SQLiteOpenHelper {
     public static final int VERSION = 1;
     public static final String DTABASE_NAME = "clientBase.db";
@@ -40,9 +43,9 @@ public class ClientBaseHelper extends SQLiteOpenHelper {
                 " unique(" + ProductTable.Cols.CODE + ") ON CONFLICT replace)"
         );
         db.execSQL("create table " + OrderTable.Cols.Products.NAME + "(" +
-                OrderTable.Cols.Products.CODE + ", " +
-                OrderTable.Cols.Products.PRODUCT + ", " +
-                OrderTable.Cols.Products.QUANTITY +
+                OrderTable.Cols.Products.pCols.CODE + ", " +
+                OrderTable.Cols.Products.pCols.PRODUCT + ", " +
+                OrderTable.Cols.Products.pCols.QUANTITY +
                 ")"
         );
         db.execSQL("create table " + OrderTable.NAME + "(" +

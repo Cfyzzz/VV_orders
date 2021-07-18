@@ -1,5 +1,8 @@
 package ru.nedovizin.vvorders.database;
 
+/** Вспомогательный класс для описания структуры полей БД
+ *
+ */
 public class ClientDbSchema {
     public static final class ClientTable {
         public static final String NAME = "clients";
@@ -40,10 +43,11 @@ public class ClientDbSchema {
             public static final String STATUS = "status";
             public static final class Products {
                 public static final String NAME = "order_products";
-                // TODO - Здесь должно быть Cols
-                public static final String CODE = "code_order"; // код заявки
-                public static final String PRODUCT = "product_name";
-                public static final String QUANTITY = "quantity";
+                public static final class pCols {
+                    public static final String CODE = "code_order"; // код заявки
+                    public static final String PRODUCT = "product_name";
+                    public static final String QUANTITY = "quantity";
+                }
             }
         }
     }

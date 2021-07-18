@@ -9,6 +9,10 @@ import android.view.MenuItem;
 
 import ru.nedovizin.vvorders.R;
 
+
+/** Главная активность с настроенным меню
+ *
+ */
 public class MenuActivity extends AppCompatActivity {
 
     @Override

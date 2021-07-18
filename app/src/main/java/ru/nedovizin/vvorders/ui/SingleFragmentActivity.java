@@ -7,6 +7,10 @@ import androidx.fragment.app.FragmentManager;
 
 import ru.nedovizin.vvorders.R;
 
+
+/** Абстрактный класс активности для главного окна с настроенным меню
+ *
+ */
 public abstract class SingleFragmentActivity extends MenuActivity {
 
     protected abstract Fragment createFragment();

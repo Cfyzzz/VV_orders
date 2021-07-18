@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.DatePicker;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import java.util.Calendar;
@@ -20,14 +19,20 @@ import java.util.GregorianCalendar;
 
 import ru.nedovizin.vvorders.R;
 
+/** Диалоговое окно выбора даты
+ *
+ */
 public class DatePickerFragment extends DialogFragment {
-
     public static final String EXTRA_DATE = "ru.nedovizin.vvorders.date";
-
     public static final String ARG_DATE = "date";
 
     private DatePicker mDatePicker;
 
+    /** Получить настроенный фрагмент с рабочей датой
+     *
+     * @param date Рабочая дата
+     * @return Настроенный фрагмент
+     */
     public static DatePickerFragment newInstance(Date date) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_DATE, date);

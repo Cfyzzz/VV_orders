@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.format.DateFormat;
-import android.util.JsonWriter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,9 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -48,6 +45,9 @@ import ru.nedovizin.vvorders.models.Order;
 import ru.nedovizin.vvorders.models.OrdersForSend;
 import ru.nedovizin.vvorders.models.SettingsConnect;
 
+/**
+ * Отображает главное окно программы
+ */
 public class ClientMainFragment extends Fragment {
     private RecyclerView mClientRecyclerView;
     private ClientsListAdapter mAdapter;
@@ -60,20 +60,13 @@ public class ClientMainFragment extends Fragment {
     private Button dateButton;
     private List<Order> mOrders;
     private String TAG = ".CMF";
-    private int codeResult = 0;
+    private SettingsConnect mSettingsConnect;
 
-    public static final int REQUEST_ORDER = 0;
-    public static final String DIALOG_ORDER = "DialogOrder";
     public static final String DIALOG_DATE = "DialogDate";
     public static final int REQUEST_DATE = 0;
     public static final String EXTRA_DATE = "Date";
     public static final String STATUS_ORDER_RECIEVED = "Recieved";
     public static final String STATUS_ORDER_POSTED = "Posted";
-
-    // TODO - Получать из конфигов
-    public static final String URL_BASE = "http://192.168.0.182";
-    public static final String LOGIN_BASE = "Елена";
-    private SettingsConnect mSettingsConnect;
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
@@ -88,7 +81,7 @@ public class ClientMainFragment extends Fragment {
             // update statuses
             Log.d(TAG, "press update statuses");
             APIInterface apiInterface;
-            apiInterface = APIClient.getData(URL_BASE).create(APIInterface.class);
+            apiInterface = APIClient.getData(mSettingsConnect.getHost()).create(APIInterface.class);
             updateOrderStatuses(apiInterface, mDateOrder);
             updateUI();
             return true;
@@ -115,6 +108,7 @@ public class ClientMainFragment extends Fragment {
         dateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Вызвать диалоговое окно для выбора даты
                 FragmentManager manager = getFragmentManager();
                 DatePickerFragment dialog = DatePickerFragment.newInstance(mDateOrder);
                 dialog.setTargetFragment(ClientMainFragment.this, REQUEST_DATE);
@@ -128,6 +122,7 @@ public class ClientMainFragment extends Fragment {
         newOrderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Открыть окно для ввода новой заявки
                 Intent intent = new Intent(getContext(), OrderActivity.class);
                 intent.putExtra(EXTRA_DATE, mDateOrder);
                 startActivity(intent);
@@ -162,8 +157,8 @@ public class ClientMainFragment extends Fragment {
                 }
 
                 APIInterface apiInterface;
-                apiInterface = APIClient.getData(URL_BASE).create(APIInterface.class);
-                sendOrders(apiInterface, LOGIN_BASE, orders);
+                apiInterface = APIClient.getData(mSettingsConnect.getHost()).create(APIInterface.class);
+                sendOrders(apiInterface, orders);
             }
         });
 
@@ -171,7 +166,7 @@ public class ClientMainFragment extends Fragment {
     }
 
     private class ClientHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        // будет заполнять ваш макет
+        // будет заполнять макет списка
         private CheckBox mIsUpdated;
         private TextView mNumberClient;
         private TextView mNameClient;
@@ -194,18 +189,33 @@ public class ClientMainFragment extends Fragment {
             itemView.setOnClickListener(this);
         }
 
+        /**
+         * Установить свзять между номером позиции в списке и конкретной заявкой
+         * Отобразить данные в UI
+         *
+         * @param order    Заявка
+         * @param position Позиция в списке
+         */
         public void bind(Order order, int position) {
             this.order = order;
             if (order.selected != null)
                 mIsUpdated.setChecked(order.selected.equals("true"));
+            else
+                order.selected = "false";
+
+            // UI
             mNumberClient.setText(String.format("%d", position + 1));
             mNameClient.setText(order.client);
             if (order.status == null)
                 order.status = "";
-            Log.d(TAG, order.client + " : " + order.status);
             updateViewStatusOrder(order);
         }
 
+        /**
+         * Обновить статус заявки в UI
+         *
+         * @param order Заявка
+         */
         private void updateViewStatusOrder(Order order) {
             switch (order.status) {
                 case STATUS_ORDER_POSTED:
@@ -266,6 +276,11 @@ public class ClientMainFragment extends Fragment {
             return data;
         }
 
+        /**
+         * Удалить элемент заявка из списка заявок
+         *
+         * @param position Номер позции элемента в спике заявок
+         */
         public void removeItem(int position) {
             // Деактивируем в базе
             Order order = data.get(position);
@@ -275,45 +290,61 @@ public class ClientMainFragment extends Fragment {
             notifyItemRemoved(position);
         }
 
-        public void restoreItem(Order item, int position) {
+        /**
+         * Восстановить удалённый недавно элемент
+         *
+         * @param order    Заявка
+         * @param position Номер позиции в списке
+         */
+        public void restoreItem(Order order, int position) {
             // Активируем в базе
-            ClientLab.get(getContext()).activateOrder(item);
+            ClientLab.get(getContext()).activateOrder(order);
             // Возвращаем в список
-            data.add(position, item);
+            data.add(position, order);
             notifyItemInserted(position);
         }
     }
 
+    /**
+     * Получить дату завтрашнего дня
+     *
+     * @return Дата завтрашнего дня
+     */
     public Date getTomorrowDate() {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_YEAR, 1);
         return calendar.getTime();
     }
 
+    /**
+     * Одновить дату в UI
+     */
     private void updateDate() {
         dateButton.setText(DateFormat.format("MMM d, yyyy", mDateOrder).toString());
     }
 
+    /**
+     * Обновить UI
+     */
     private void updateUI() {
         updateDate();
         ClientLab mClientLab = ClientLab.get(getContext());
         mOrders = mClientLab.getOrdersByDate(mDateOrder);
         for (Order order : mOrders) {
-            if (order.status == null) order.status = "";
-            if (order.status.isEmpty())
+            if (!order.hasStatusSent())
                 order.selected = "true";
+            else
+                order.selected = "false";
         }
 
-        mAdapter = null;
-        if (mAdapter == null || mAdapter.getItemCount() != mOrders.size()) {
-            mAdapter = new ClientsListAdapter(mOrders);
-            mClientRecyclerView.setAdapter(mAdapter);
-            enableSwipeToDeleteAndUndo();
-        } else {
-            mAdapter.notifyDataSetChanged();
-        }
+        mAdapter = new ClientsListAdapter(mOrders);
+        mClientRecyclerView.setAdapter(mAdapter);
+        enableSwipeToDeleteAndUndo();
     }
 
+    /**
+     * Подключть интерфейс удаление свайпом влево
+     */
     private void enableSwipeToDeleteAndUndo() {
         SwipeToDeleteCallback swipeToDeleteCallback = new SwipeToDeleteCallback(getActivity()) {
             @Override
@@ -322,27 +353,27 @@ public class ClientMainFragment extends Fragment {
                 final int position = viewHolder.getAdapterPosition();
                 final Order order = mAdapter.getData().get(position);
 
-                if (order.status != null && !order.status.isEmpty()) {
-                    APIInterface apiInterface;
-                    apiInterface = APIClient.getData(URL_BASE).create(APIInterface.class);
-                    sendDeleteOrder(apiInterface, order.code);
-                }
-
                 mAdapter.removeItem(position);
-//
-//                Snackbar snackbar = Snackbar
-//                        .make(mActivityListBase, "Элемент был удалён из списка.", Snackbar.LENGTH_LONG);
-//                snackbar.setAction("ОТМЕНА", new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        mAdapter.restoreItem(order, position);
-//                        mClientRecyclerView.scrollToPosition(position);
-//                        sendCancelDeleteOrder(apiInterface, codeOrder);
-//                    }
-//                });
-//
-//                snackbar.setActionTextColor(Color.YELLOW);
-//                snackbar.show();
+
+                if (order.hasStatusSent()) {
+                    // Возможность отмены удаления отправленных заявок
+                    APIInterface apiInterface;
+                    apiInterface = APIClient.getData(mSettingsConnect.getHost()).create(APIInterface.class);
+                    sendDeleteOrder(apiInterface, order.code);
+                } else {
+                    // Возможность отмены удаления неотправленных заявок
+                    Snackbar snackbar = Snackbar
+                            .make(mActivityListBase, "Элемент был удалён из списка.", Snackbar.LENGTH_LONG);
+                    snackbar.setAction("ОТМЕНА", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            mAdapter.restoreItem(order, position);
+                            mClientRecyclerView.scrollToPosition(position);
+                        }
+                    });
+                    snackbar.setActionTextColor(Color.YELLOW);
+                    snackbar.show();
+                }
             }
         };
 
@@ -371,50 +402,12 @@ public class ClientMainFragment extends Fragment {
         Log.d(TAG, "Resume");
     }
 
-    // TODO - Не используется
-    public static void writeOrderJsonStream(Writer output, List<Order> orders) throws IOException {
-        JsonWriter jsonWriter = new JsonWriter(output);
-
-//        jsonWriter.beginObject();// begin root
-//        jsonWriter.name("Заявки");
-        jsonWriter.beginObject();
-
-        for (Order order : orders) {
-            jsonWriter.beginObject();
-
-            jsonWriter.name("Код").value(order.code);
-            jsonWriter.name("Клиент").value(order.client);
-            jsonWriter.name("Дата").value(order.date);
-            jsonWriter.name("Адрес").value(order.address);
-
-            ClientLab clientLab = ClientLab.get(null);
-            List<ProductItem> productItems = clientLab.getProductsByOrderId(order.code);
-
-            jsonWriter.name("Номенклатура");
-            jsonWriter.beginObject();
-            for (ProductItem item : productItems) {
-                jsonWriter.beginObject();
-                jsonWriter.name("Номенклатура").value(item.product.name);
-                jsonWriter.name("КодНоменклатуры").value(item.product.code);
-                jsonWriter.name("Количество").value(item.quantity);
-                jsonWriter.endObject();
-            }
-            jsonWriter.endObject();
-
-            jsonWriter.endObject();
-        }
-        jsonWriter.endObject();
-//        jsonWriter.endObject(); // end root
-    }
-
-    public void setCodeResult(int code) {
-        codeResult = code;
-    }
-
-    public int getCodeResult() {
-        return codeResult;
-    }
-
+    /**
+     * Отправить уведомление на AS об отмене пометки удаения заявки
+     *
+     * @param apiInterface API интерфейс
+     * @param codeOrder    Поле код {@code code} заявки
+     */
     private void sendCancelDeleteOrder(APIInterface apiInterface, String codeOrder) {
         mStatusLine.setText("");
         try {
@@ -443,6 +436,12 @@ public class ClientMainFragment extends Fragment {
         }
     }
 
+    /**
+     * Отправить на AS ведомление об удалении заявки
+     *
+     * @param apiInterface API интерфейс
+     * @param codeOrder    Поле код {@code code} заявки
+     */
     private void sendDeleteOrder(APIInterface apiInterface, String codeOrder) {
         mStatusLine.setText("");
         try {
@@ -484,7 +483,13 @@ public class ClientMainFragment extends Fragment {
         }
     }
 
-    private void sendOrders(APIInterface apiInterface, String userName, List<Order> orders) {
+    /**
+     * Отправить выделенные заявки на AS
+     *
+     * @param apiInterface API интерфейс
+     * @param orders       Поле код {@code code} заявки
+     */
+    private void sendOrders(APIInterface apiInterface, List<Order> orders) {
         mStatusLine.setText("");
         OrdersForSend mOrdersForSend = new OrdersForSend(orders);
         try {
@@ -504,7 +509,7 @@ public class ClientMainFragment extends Fragment {
                 @Override
                 public void onFailure(Call<MultipleResource> call, Throwable t) {
                     Log.d(TAG, "sendOrders failure");
-                    mStatusLine.setText("Сервер не отвечает (failure) " + t.getMessage());
+                    mStatusLine.setText("Сервер не отвечает (failure) " + TAG);
                 }
             });
         } catch (UnsupportedEncodingException e) {
@@ -512,6 +517,12 @@ public class ClientMainFragment extends Fragment {
         }
     }
 
+    /**
+     * Обновить статусы заявок на дату {@date}
+     *
+     * @param apiInterface API интерфейс
+     * @param date         Текущая рабочая дата
+     */
     private void updateOrderStatuses(APIInterface apiInterface, Date date) {
         mStatusLine.setText("");
         String d = ClientLab.get(getContext()).DateToString(date);
@@ -543,7 +554,7 @@ public class ClientMainFragment extends Fragment {
                 @Override
                 public void onFailure(Call<MultipleResource> call, Throwable t) {
                     Log.d(TAG, "updateOrderStatuses failure");
-                    mStatusLine.setText("Сервер не отвечает (failure)");
+                    mStatusLine.setText("Сервер не отвечает (failure)" + TAG);
                 }
             });
         } catch (UnsupportedEncodingException e) {
