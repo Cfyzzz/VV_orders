@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Мои заявки</string>
     <string name="settings">Настройки</string>
-    <string name="send_button">Новая заявка</string>
+    <string name="new_order_button">Новая заявка</string>
     <string name="connectline_strings">Строка подключения:</string>
     <string name="login_settings">Логин:</string>
     <string name="password_settings">Пароль:</string>

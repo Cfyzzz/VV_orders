@@ -31,21 +31,34 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="8dp">
 
         <Button
-            android:id="@+id/new_order_button"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="@string/send_button"/>
-
-        <Button
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@drawable/round_button"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="->"
+            android:textSize="50sp"
+            android:textColor="#fff"
             android:id="@+id/send_button"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="@string/send_order_button"/>
+            android:layout_weight="0"
+            android:layout_marginRight="64dp"
+            android:hint="@string/send_order_button"/>
+
+        <Button
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@drawable/round_button"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="+"
+            android:textSize="50sp"
+            android:textColor="#fff"
+            android:id="@+id/new_order_button"
+            android:layout_weight="0"
+            android:hint="@string/new_order_button"/>
     </LinearLayout>
 
 

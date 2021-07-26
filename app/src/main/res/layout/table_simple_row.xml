@@ -8,17 +8,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:gravity="left"
+        android:gravity="top|left"
         android:text=""
-        android:textSize="24sp" />
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/row_col4"
         android:layout_width="32dp"
         android:layout_height="wrap_content"
         android:layout_weight="0"
-        android:gravity="right"
+        android:gravity="top|right"
         android:text=""
-        android:textSize="24sp" />
+        android:textSize="16sp" />
 
 </LinearLayout>
