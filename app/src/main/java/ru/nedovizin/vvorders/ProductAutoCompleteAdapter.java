@@ -90,7 +90,7 @@ public class ProductAutoCompleteAdapter extends BaseAdapter implements Filterabl
     private List<ProductItem> findProducts(String productTitle) {
         List<Product> products = new ArrayList<>();
         List<ProductItem> productItems = new ArrayList<>();
-        ClientLab clietnLab = ClientLab.get(mContext);
+        ClientLab clientLab = ClientLab.get(mContext);
         String quantity = "1";
 
         String product = productTitle.trim()
@@ -103,7 +103,7 @@ public class ProductAutoCompleteAdapter extends BaseAdapter implements Filterabl
             quantity = words[idxEndWord];
             words = Arrays.copyOfRange(words, 0, idxEndWord);
             product = TextUtils.join(" ", words);
-            products = clietnLab.getProductsByLikeWords(product);
+            products = clientLab.getProductsByLikeWords(product);
         }
         for (Product prod : products) {
             ProductItem prodItem = new ProductItem(prod);

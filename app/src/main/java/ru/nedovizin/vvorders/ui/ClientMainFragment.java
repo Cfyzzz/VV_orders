@@ -1,5 +1,6 @@
 package ru.nedovizin.vvorders.ui;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
@@ -14,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -59,7 +60,7 @@ public class ClientMainFragment extends Fragment {
     private Button sendOrderButton;
     private Button dateButton;
     private List<Order> mOrders;
-    private String TAG = ".CMF";
+    private final String TAG = ".CMF";
     private SettingsConnect mSettingsConnect;
 
     public static final String DIALOG_DATE = "DialogDate";
@@ -69,12 +70,12 @@ public class ClientMainFragment extends Fragment {
     public static final String STATUS_ORDER_POSTED = "Posted";
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         Log.d(TAG, "id item menu: " + id);
         if (id == R.id.action_update_statuses) {
@@ -86,7 +87,7 @@ public class ClientMainFragment extends Fragment {
             updateUI();
             return true;
         }
-        return getActivity().onOptionsItemSelected(item);
+        return Objects.requireNonNull(getActivity()).onOptionsItemSelected(item);
     }
 
     @Override
@@ -105,30 +106,26 @@ public class ClientMainFragment extends Fragment {
 
         dateButton = view.findViewById(R.id.date_button);
         mDateOrder = getTomorrowDate();
-        dateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Вызвать диалоговое окно для выбора даты
-                FragmentManager manager = getFragmentManager();
-                DatePickerFragment dialog = DatePickerFragment.newInstance(mDateOrder);
-                dialog.setTargetFragment(ClientMainFragment.this, REQUEST_DATE);
-                dialog.show(manager, DIALOG_DATE);
-            }
+        dateButton.setOnClickListener(v -> {
+            // Вызвать диалоговое окно для выбора даты
+            final FragmentManager manager = getFragmentManager();
+            DatePickerFragment dialog = DatePickerFragment.newInstance(mDateOrder);
+            dialog.setTargetFragment(ClientMainFragment.this, REQUEST_DATE);
+            assert manager != null;
+            dialog.show(manager, DIALOG_DATE);
         });
 
         updateUI();
 
         newOrderButton = view.findViewById(R.id.new_order_button);
-        newOrderButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Открыть окно для ввода новой заявки
-                Intent intent = new Intent(getContext(), OrderActivity.class);
-                intent.putExtra(EXTRA_DATE, mDateOrder);
-                startActivity(intent);
-                Log.d(TAG, "new_order_button.onClick after startActivity");
-                // TODO - Попытка открыть во фрагменте новую заявку,
-                //  но при закрытии заявки закрывается всё приложение
+        newOrderButton.setOnClickListener(v -> {
+            // Открыть окно для ввода новой заявки
+            Intent intent = new Intent(getContext(), OrderActivity.class);
+            intent.putExtra(EXTRA_DATE, mDateOrder);
+            startActivity(intent);
+            Log.d(TAG, "new_order_button.onClick after startActivity");
+            // TODO - Попытка открыть во фрагменте новую заявку,
+            //  но при закрытии заявки закрывается всё приложение
 //                Bundle args = new Bundle();
 //                args.putSerializable(EXTRA_DATE, mDateOrder);
 //                OrderFragment order = OrderFragment.newInstance(null);
@@ -137,29 +134,25 @@ public class ClientMainFragment extends Fragment {
 //                FragmentTransaction transaction = manager.beginTransaction();
 //                transaction.replace(R.id.fragment_container, order);
 //                transaction.commit();
-            }
         });
 
         sendOrderButton = view.findViewById(R.id.send_button);
-        sendOrderButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // подготовить все выделенные заявки
-                mStatusLine.setText("");
-                List<Order> orders = new ArrayList<>();
-                for (Order order : mOrders) {
-                    if (order.selected != null && order.selected.equals("true")) {
-                        ClientLab clientLab = ClientLab.get(getContext());
-                        List<ProductItem> productItems = clientLab.getProductsByOrderId(order.code);
-                        order.setProducts(productItems);
-                        orders.add(order);
-                    }
+        sendOrderButton.setOnClickListener(v -> {
+            // подготовить все выделенные заявки
+            mStatusLine.setText("");
+            List<Order> orders = new ArrayList<>();
+            for (Order order : mOrders) {
+                if (order.selected != null && order.selected.equals("true")) {
+                    ClientLab clientLab = ClientLab.get(getContext());
+                    List<ProductItem> productItems = clientLab.getProductsByOrderId(order.code);
+                    order.setProducts(productItems);
+                    orders.add(order);
                 }
-
-                APIInterface apiInterface;
-                apiInterface = APIClient.getData(mSettingsConnect.getHost()).create(APIInterface.class);
-                sendOrders(apiInterface, orders);
             }
+
+            APIInterface apiInterface;
+            apiInterface = APIClient.getData(mSettingsConnect.getHost()).create(APIInterface.class);
+            sendOrders(apiInterface, orders);
         });
 
         return view;
@@ -167,22 +160,17 @@ public class ClientMainFragment extends Fragment {
 
     private class ClientHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         // будет заполнять макет списка
-        private CheckBox mIsUpdated;
-        private TextView mNumberClient;
-        private TextView mNameClient;
-        private TextView mStatus;
+        private final CheckBox mIsUpdated;
+        private final TextView mNumberClient;
+        private final TextView mNameClient;
+        private final TextView mStatus;
         private Order order;
 
         public ClientHolder(View view) {
             super(view);
 
             mIsUpdated = itemView.findViewById(R.id.col1);
-            mIsUpdated.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    order.selected = Boolean.toString(isChecked);
-                }
-            });
+            mIsUpdated.setOnCheckedChangeListener((buttonView, isChecked) -> order.selected = Boolean.toString(isChecked));
             mNumberClient = itemView.findViewById(R.id.col2);
             mNameClient = itemView.findViewById(R.id.col3);
             mStatus = itemView.findViewById(R.id.col4);
@@ -196,6 +184,7 @@ public class ClientMainFragment extends Fragment {
          * @param order    Заявка
          * @param position Позиция в списке
          */
+        @SuppressLint("DefaultLocale")
         public void bind(Order order, int position) {
             this.order = order;
             if (order.selected != null)
@@ -241,12 +230,13 @@ public class ClientMainFragment extends Fragment {
 
     public class ClientsListAdapter extends RecyclerView.Adapter<ClientHolder> {
 
-        private List<Order> data;
+        private final List<Order> data;
 
         public ClientsListAdapter(List<Order> data) {
             this.data = data;
         }
 
+        @NonNull
         @Override
         public ClientHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View itemView;
@@ -364,12 +354,9 @@ public class ClientMainFragment extends Fragment {
                     // Возможность отмены удаления неотправленных заявок
                     Snackbar snackbar = Snackbar
                             .make(mActivityListBase, "Элемент был удалён из списка.", Snackbar.LENGTH_LONG);
-                    snackbar.setAction("ОТМЕНА", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            mAdapter.restoreItem(order, position);
-                            mClientRecyclerView.scrollToPosition(position);
-                        }
+                    snackbar.setAction("ОТМЕНА", view -> {
+                        mAdapter.restoreItem(order, position);
+                        mClientRecyclerView.scrollToPosition(position);
                     });
                     snackbar.setActionTextColor(Color.YELLOW);
                     snackbar.show();
@@ -387,8 +374,7 @@ public class ClientMainFragment extends Fragment {
             return;
         }
         if (requestCode == REQUEST_DATE) {
-            Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
-            mDateOrder = date;
+            mDateOrder = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             updateDate();
         }
         updateUI();
@@ -410,28 +396,24 @@ public class ClientMainFragment extends Fragment {
      */
     private void sendCancelDeleteOrder(APIInterface apiInterface, String codeOrder) {
         mStatusLine.setText("");
-        try {
-            Call<MultipleResource> call = apiInterface.sendCancelDeleteOrder(codeOrder, mSettingsConnect.getAuthBase64());
-            call.enqueue(new Callback<MultipleResource>() {
-                @Override
-                public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
-                    if (response.code() != 200)
-                        return;
-                    if (response.body().status.equals("Ok")) {
-                        restoreDeletedOrder(codeOrder);
-                    } else {
-                        mStatusLine.setText(response.body().description);
-                    }
+        Call<MultipleResource> call = apiInterface.sendCancelDeleteOrder(codeOrder, mSettingsConnect.getAuthBase64());
+        call.enqueue(new Callback<MultipleResource>() {
+            @Override
+            public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
+                if (response.code() != 200)
+                    return;
+                if (response.body().status.equals("Ok")) {
+                    restoreDeletedOrder(codeOrder);
+                } else {
+                    mStatusLine.setText(response.body().description);
                 }
+            }
 
-                @Override
-                public void onFailure(Call<MultipleResource> call, Throwable t) {
-                    Log.d(TAG, "sendCancelDeleteOrder failure");
-                }
-            });
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+            @Override
+            public void onFailure(Call<MultipleResource> call, Throwable t) {
+                Log.d(TAG, "sendCancelDeleteOrder failure");
+            }
+        });
     }
 
     /**
@@ -442,45 +424,38 @@ public class ClientMainFragment extends Fragment {
      */
     private void sendDeleteOrder(APIInterface apiInterface, String codeOrder) {
         mStatusLine.setText("");
-        try {
-            Call<MultipleResource> call = apiInterface.sendDeleteOrder(codeOrder, mSettingsConnect.getAuthBase64());
-            call.enqueue(new Callback<MultipleResource>() {
-                @Override
-                public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
-                    int code = response.code();
-                    if (code == 204) {
-                        Order order = ClientLab.get(getContext()).getOrder(codeOrder);
-                        ClientLab.get(getContext()).inactivateOrder(order);
-                        updateUI();
-                        mStatusLine.setText("Заявка удалена");
+        Call<MultipleResource> call = apiInterface.sendDeleteOrder(codeOrder, mSettingsConnect.getAuthBase64());
+        call.enqueue(new Callback<MultipleResource>() {
+            @Override
+            public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
+                int code = response.code();
+                if (code == 204) {
+                    Order order = ClientLab.get(getContext()).getOrder(codeOrder);
+                    ClientLab.get(getContext()).inactivateOrder(order);
+                    updateUI();
+                    mStatusLine.setText("Заявка удалена");
 
-                        Snackbar snackbar = Snackbar
-                                .make(mActivityListBase, "Элемент был удалён из списка.", Snackbar.LENGTH_LONG);
-                        snackbar.setAction("ОТМЕНА", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                sendCancelDeleteOrder(apiInterface, codeOrder);
-                                mStatusLine.setText("");
-                            }
-                        });
-                        snackbar.setActionTextColor(Color.YELLOW);
-                        snackbar.show();
-                    } else {
-                        restoreDeletedOrder(codeOrder);
-                        mStatusLine.setText(response.body().description);
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<MultipleResource> call, Throwable t) {
+                    Snackbar snackbar = Snackbar
+                            .make(mActivityListBase, "Элемент был удалён из списка.", Snackbar.LENGTH_LONG);
+                    snackbar.setAction("ОТМЕНА", view -> {
+                        sendCancelDeleteOrder(apiInterface, codeOrder);
+                        mStatusLine.setText("");
+                    });
+                    snackbar.setActionTextColor(Color.YELLOW);
+                    snackbar.show();
+                } else {
                     restoreDeletedOrder(codeOrder);
-                    Log.d(TAG, "sendDeleteOrder failure");
-                    mStatusLine.setText("Сервер не отвечает (failure)");
+                    mStatusLine.setText(response.body().description);
                 }
-            });
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+            }
+
+            @Override
+            public void onFailure(Call<MultipleResource> call, Throwable t) {
+                restoreDeletedOrder(codeOrder);
+                Log.d(TAG, "sendDeleteOrder failure");
+                mStatusLine.setText(R.string.message_server_is_not_recieve);
+            }
+        });
     }
 
     /**
@@ -492,33 +467,30 @@ public class ClientMainFragment extends Fragment {
     private void sendOrders(APIInterface apiInterface, List<Order> orders) {
         mStatusLine.setText("");
         OrdersForSend mOrdersForSend = new OrdersForSend(orders);
-        try {
-            Call<MultipleResource> call = apiInterface.sendOrders(mOrdersForSend, mSettingsConnect.getAuthBase64());
-            call.enqueue(new Callback<MultipleResource>() {
-                @Override
-                public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
-                    int code = response.code();
-                    if (code == 201) {
-                        updateOrderStatuses(apiInterface, mDateOrder);
-                        mStatusLine.setText("Заявки отправлены на сервер");
-                    } else {
-                        mStatusLine.setText(response.body().description);
-                    }
+        Call<MultipleResource> call = apiInterface.sendOrders(mOrdersForSend, mSettingsConnect.getAuthBase64());
+        call.enqueue(new Callback<MultipleResource>() {
+            @Override
+            public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
+                int code = response.code();
+                if (code == 201) {
+                    updateOrderStatuses(apiInterface, mDateOrder);
+                    mStatusLine.setText("Заявки отправлены на сервер");
+                } else {
+                    mStatusLine.setText(response.body().description);
                 }
+            }
 
-                @Override
-                public void onFailure(Call<MultipleResource> call, Throwable t) {
-                    Log.d(TAG, "sendOrders failure");
-                    mStatusLine.setText("Сервер не отвечает (failure) " + TAG);
-                }
-            });
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onFailure(Call<MultipleResource> call, Throwable t) {
+                Log.d(TAG, "sendOrders failure");
+                mStatusLine.setText(R.string.message_server_is_not_recieve + TAG);
+            }
+        });
     }
 
     /**
-     * Обновить статусы заявок на дату {@date}
+     * Обновить статусы заявок на дату {@code date}
      *
      * @param apiInterface API интерфейс
      * @param date         Текущая рабочая дата
@@ -527,39 +499,36 @@ public class ClientMainFragment extends Fragment {
         mStatusLine.setText("");
         String d = ClientLab.get(getContext()).DateToString(date);
         Log.d(TAG, ">> updateOrderStatuses Date: " + d);
-        try {
-            Call<MultipleResource> call = apiInterface.doGetStatus(d, mSettingsConnect.getAuthBase64());
-            call.enqueue(new Callback<MultipleResource>() {
-                @Override
-                public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
-                    if (response.code() == 200) {
-                        mStatusLine.setText("");
-                        Log.d(TAG, response.body().toString());
-                        ClientLab clientLab = ClientLab.get(getContext());
-                        for (MultipleResource.StatusOrder statusOrder : response.body().answer.mStatusOrders) {
-                            Order order = clientLab.getOrder(statusOrder.code);
-                            if (order != null) {
-                                Log.d(TAG, "update status " + order.client + " is " + statusOrder.status);
-                                order.status = statusOrder.status;
-                                clientLab.updateOrder(order);
-                            }
+        Call<MultipleResource> call = apiInterface.doGetStatus(d, mSettingsConnect.getAuthBase64());
+        call.enqueue(new Callback<MultipleResource>() {
+            @Override
+            public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
+                if (response.code() == 200) {
+                    mStatusLine.setText("");
+                    Log.d(TAG, response.body().toString());
+                    ClientLab clientLab = ClientLab.get(getContext());
+                    for (MultipleResource.StatusOrder statusOrder : response.body().answer.mStatusOrders) {
+                        Order order = clientLab.getOrder(statusOrder.code);
+                        if (order != null) {
+                            Log.d(TAG, "update status " + order.client + " is " + statusOrder.status);
+                            order.status = statusOrder.status;
+                            clientLab.updateOrder(order);
                         }
-                        updateUI();
-                        mStatusLine.setText("Статусы заявок обновлены");
-                    } else {
-                        mStatusLine.setText(response.body().description);
                     }
+                    updateUI();
+                    mStatusLine.setText("Статусы заявок обновлены");
+                } else {
+                    mStatusLine.setText(response.body().description);
                 }
+            }
 
-                @Override
-                public void onFailure(Call<MultipleResource> call, Throwable t) {
-                    Log.d(TAG, "updateOrderStatuses failure");
-                    mStatusLine.setText("Сервер не отвечает (failure)" + TAG);
-                }
-            });
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onFailure(Call<MultipleResource> call, Throwable t) {
+                Log.d(TAG, "updateOrderStatuses failure");
+                mStatusLine.setText("Сервер не отвечает (failure)" + TAG);
+            }
+        });
     }
 
     /**

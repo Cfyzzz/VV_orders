@@ -15,10 +15,10 @@ import ru.nedovizin.vvorders.database.ClientDbSchema.SettingsTable;
  */
 public class ClientBaseHelper extends SQLiteOpenHelper {
     public static final int VERSION = 1;
-    public static final String DTABASE_NAME = "clientBase2.db";
+    public static final String DATABASE_NAME = "clientBase2.db";
 
     public ClientBaseHelper(Context context) {
-        super(context, DTABASE_NAME, null, VERSION);
+        super(context, DATABASE_NAME, null, VERSION);
     }
 
     @Override

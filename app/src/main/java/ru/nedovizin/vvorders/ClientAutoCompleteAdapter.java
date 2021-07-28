@@ -87,8 +87,8 @@ public class ClientAutoCompleteAdapter extends BaseAdapter implements Filterable
      * Returns a search result for the given book title.
      */
     private List<Contragent> findClients(String clientTitle) {
-        ClientLab clietnLab = ClientLab.get(mContext);
-        List<Contragent> clients = clietnLab.getClientsByLikeName(clientTitle);
+        ClientLab clientLab = ClientLab.get(mContext);
+        List<Contragent> clients = clientLab.getClientsByLikeName(clientTitle);
         return clients;
     }
 }

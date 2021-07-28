@@ -1,13 +1,11 @@
 package ru.nedovizin.vvorders.ui;
 
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -43,7 +41,7 @@ import ru.nedovizin.vvorders.models.Order;
 public class OrderActivity extends MenuActivity {
 
     private ClientLab mClientLab;
-    private RecyclerView mProductReclerView;
+    private RecyclerView mProductRecyclerView;
     private ProductListAdapter mAdapter;
     private List<ProductItem> mProducts;
     private View mOrderActivityBase;
@@ -58,8 +56,8 @@ public class OrderActivity extends MenuActivity {
         setContentView(R.layout.activity_order);
 
         mOrderActivityBase = findViewById(R.id.order_activity_base);
-        mProductReclerView = findViewById(R.id.table_products);
-        mProductReclerView.setLayoutManager(new LinearLayoutManager(this));
+        mProductRecyclerView = findViewById(R.id.table_products);
+        mProductRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mClientLab = ClientLab.get(getBaseContext());
         mSaveOrderButton = findViewById(R.id.save_order_button);
 
@@ -70,65 +68,53 @@ public class OrderActivity extends MenuActivity {
         mProducts = new ArrayList<>();
         updateUI();
 
-        mSaveOrderButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Сохранить заявку и закрыть окно
-                Order order = new Order();
-                order.client = clientTitle.getText().toString();
-                order.address = addressTitle.getText().toString();
-                Date date = (Date) getIntent().getSerializableExtra(EXTRA_DATE);
-                order.date = mClientLab.DateToString(date);
-                order.code = UUID.randomUUID().toString();
-                mClientLab.addOrder(order, mProducts);
-                finish();
-            }
+        mSaveOrderButton.setOnClickListener(v -> {
+            // Сохранить заявку и закрыть окно
+            Order order = new Order();
+            order.client = clientTitle.getText().toString();
+            order.address = addressTitle.getText().toString();
+            Date date = (Date) getIntent().getSerializableExtra(EXTRA_DATE);
+            order.date = mClientLab.DateToString(date);
+            order.code = UUID.randomUUID().toString();
+            mClientLab.addOrder(order, mProducts);
+            finish();
         });
 
         clientTitle.setThreshold(4);
         clientTitle.setAdapter(new ClientAutoCompleteAdapter(getBaseContext()));
         clientTitle.setLoadingIndicator((ProgressBar) findViewById(R.id.progress_bar));
-        clientTitle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                // Выбор варианта из клиентов
-                Contragent client = (Contragent) adapterView.getItemAtPosition(position);
-                clientTitle.setText(client.name);
-                addressTitle.requestFocus();
-                mClientLab.setCurrentClient(client);
-                List<Address> addresses = mClientLab.getAddressesByClient(client);
-                if (addresses.size() == 1) {
-                    addressTitle.setText(addresses.get(0).name);
-                    productTitle.requestFocus();
-                } else {
-                    addressTitle.setText(" ");
-                }
+        clientTitle.setOnItemClickListener((adapterView, view, position, id) -> {
+            // Выбор варианта из клиентов
+            Contragent client = (Contragent) adapterView.getItemAtPosition(position);
+            clientTitle.setText(client.name);
+            addressTitle.requestFocus();
+            mClientLab.setCurrentClient(client);
+            List<Address> addresses = mClientLab.getAddressesByClient(client);
+            if (addresses.size() == 1) {
+                addressTitle.setText(addresses.get(0).name);
+                productTitle.requestFocus();
+            } else {
+                addressTitle.setText(" ");
             }
         });
 
         addressTitle.setThreshold(1);
         addressTitle.setAdapter(new AddressAutoCompleteAdapter(getBaseContext()));
-        addressTitle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                // Выбор варианта из адресов
-                Address address = (Address) adapterView.getItemAtPosition(position);
-                addressTitle.setText(address.name);
-                productTitle.requestFocus();
-            }
+        addressTitle.setOnItemClickListener((adapterView, view, position, id) -> {
+            // Выбор варианта из адресов
+            Address address = (Address) adapterView.getItemAtPosition(position);
+            addressTitle.setText(address.name);
+            productTitle.requestFocus();
         });
 
         productTitle.setThreshold(5);
         productTitle.setAdapter(new ProductAutoCompleteAdapter(getBaseContext()));
-        productTitle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                // Выбор варианта из продукции
-                ProductItem productItem = (ProductItem) adapterView.getItemAtPosition(position);
-                mProducts.add(productItem);
-                productTitle.setText("");
-                updateUI();
-            }
+        productTitle.setOnItemClickListener((adapterView, view, position, id) -> {
+            // Выбор варианта из продукции
+            ProductItem productItem = (ProductItem) adapterView.getItemAtPosition(position);
+            mProducts.add(productItem);
+            productTitle.setText("");
+            updateUI();
         });
     }
 
@@ -144,12 +130,12 @@ public class OrderActivity extends MenuActivity {
     private void updateUI() {
         if (mAdapter == null) {
             mAdapter = new ProductListAdapter(mProducts);
-            mProductReclerView.setAdapter(mAdapter);
+            mProductRecyclerView.setAdapter(mAdapter);
             enableSwipeToDeleteAndUndo();
         } else {
             mAdapter.notifyDataSetChanged();
         }
-        Log.d(TAG, "quantity products: " + Integer.toString(mProducts.size()));
+        Log.d(TAG, "quantity products: " + mProducts.size());
     }
 
     /** Подключить интерфейс удаления свайпом влево
@@ -167,12 +153,9 @@ public class OrderActivity extends MenuActivity {
 
                 Snackbar snackbar = Snackbar
                         .make(mOrderActivityBase, "Элемент был удалён из списка.", Snackbar.LENGTH_LONG);
-                snackbar.setAction("ОТМЕНА", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        mAdapter.restoreItem(item, position);
-                        mProductReclerView.scrollToPosition(position);
-                    }
+                snackbar.setAction("ОТМЕНА", view -> {
+                    mAdapter.restoreItem(item, position);
+                    mProductRecyclerView.scrollToPosition(position);
                 });
 
                 snackbar.setActionTextColor(Color.YELLOW);
@@ -182,13 +165,13 @@ public class OrderActivity extends MenuActivity {
         };
 
         ItemTouchHelper itemTouchhelper = new ItemTouchHelper(swipeToDeleteCallback);
-        itemTouchhelper.attachToRecyclerView(mProductReclerView);
+        itemTouchhelper.attachToRecyclerView(mProductRecyclerView);
     }
 
     private class ProductHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private TextView mNameProduct;
-        private TextView mQuantityProducts;
+        private final TextView mNameProduct;
+        private final TextView mQuantityProducts;
         private ProductItem mProduct;
 
         public ProductHolder(View view) {
@@ -228,19 +211,13 @@ public class OrderActivity extends MenuActivity {
             mDialogBuilder
                     .setCancelable(false)
                     .setPositiveButton("OK",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    //Вводим текст и отображаем в строке ввода на основном экране:
-                                    mProduct.quantity = userInput.getText().toString();
-                                    updateUI();
-                                }
+                            (dialog, id) -> {
+                                //Вводим текст и отображаем в строке ввода на основном экране:
+                                mProduct.quantity = userInput.getText().toString();
+                                updateUI();
                             })
                     .setNegativeButton("Отмена",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.cancel();
-                                }
-                            });
+                            (dialog, id) -> dialog.cancel());
 
             //Создаем AlertDialog:
             AlertDialog alertDialog = mDialogBuilder.create();
@@ -258,6 +235,7 @@ public class OrderActivity extends MenuActivity {
             this.data = data;
         }
 
+        @NonNull
         @Override
         public ProductHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View itemView;

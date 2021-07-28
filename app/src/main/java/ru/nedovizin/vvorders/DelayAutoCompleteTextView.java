@@ -1,5 +1,6 @@
 package ru.nedovizin.vvorders;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
@@ -17,6 +18,7 @@ public class DelayAutoCompleteTextView extends androidx.appcompat.widget.AppComp
     private int mAutoCompleteDelay = DEFAULT_AUTOCOMPLETE_DELAY;
     private ProgressBar mLoadingIndicator;
 
+    @SuppressLint("HandlerLeak")
     private final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {

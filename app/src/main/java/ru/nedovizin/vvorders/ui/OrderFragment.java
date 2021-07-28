@@ -1,13 +1,11 @@
 package ru.nedovizin.vvorders.ui;
 
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -24,6 +22,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import ru.nedovizin.vvorders.AddressAutoCompleteAdapter;
@@ -45,7 +44,7 @@ public class OrderFragment extends Fragment {
     public static final String EXTRA_DATE = "Date";
 
     private ClientLab mClientLab;
-    private RecyclerView mProductReclerView;
+    private RecyclerView mProductRecyclerView;
     private OrderFragment.ProductListAdapter mAdapter;
     private List<ProductItem> mProducts;
     private View mOrderActivityBase;
@@ -56,6 +55,7 @@ public class OrderFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        assert getArguments() != null;
         String orderId = (String) getArguments().getSerializable(ARG_ORDER_ID);
         mOrder = ClientLab.get(getActivity()).getOrder(orderId);
     }
@@ -63,7 +63,7 @@ public class OrderFragment extends Fragment {
     /** Получить настроенный фрагмент окна редактирования заявки
      *
      * @param orderId Поле код {@code code} заявки
-     * @return
+     * @return Настроенный фрагмент заявки
      */
     public static OrderFragment newInstance(String orderId) {
         Bundle args = new Bundle();
@@ -79,8 +79,8 @@ public class OrderFragment extends Fragment {
         View view = inflater.inflate(R.layout.activity_order, container, false);
 
         mOrderActivityBase = view.findViewById(R.id.order_activity_base);
-        mProductReclerView = view.findViewById(R.id.table_products);
-        mProductReclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mProductRecyclerView = view.findViewById(R.id.table_products);
+        mProductRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mClientLab = ClientLab.get(getActivity());
         mSaveOrderButton = view.findViewById(R.id.save_order_button);
 
@@ -94,7 +94,7 @@ public class OrderFragment extends Fragment {
 
             // Блокируем элементы, если заявка имеет статус (значит она уже отправлена на сервер)
             if (mOrder.hasStatusSent()) {
-                mProductReclerView.setEnabled(false);
+                mProductRecyclerView.setEnabled(false);
                 addressTitle.setEnabled(false);
                 clientTitle.setEnabled(false);
                 productTitle.setEnabled(false);
@@ -103,6 +103,7 @@ public class OrderFragment extends Fragment {
             // На случай новой заявки
             mOrder = new Order();
             mOrder.client = clientTitle.getText().toString();
+            assert getArguments() != null;
             Date date = (Date) getArguments().getSerializable(EXTRA_DATE);
             Log.d(TAG, "Date = " + date);
             mOrder.date = mClientLab.DateToString(date);
@@ -113,62 +114,50 @@ public class OrderFragment extends Fragment {
         mProducts = mClientLab.getProductsByOrderId(mOrder.code);
         updateUI();
 
-        mSaveOrderButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Сохранить заявку
-                mOrder.client = clientTitle.getText().toString();
-                mOrder.address = addressTitle.getText().toString();
-                mClientLab.clearProducts(mOrder);
-                mClientLab.addOrder(mOrder, mProducts);
-                getActivity().finish();
-            }
+        mSaveOrderButton.setOnClickListener(v -> {
+            // Сохранить заявку
+            mOrder.client = clientTitle.getText().toString();
+            mOrder.address = addressTitle.getText().toString();
+            mClientLab.clearProducts(mOrder);
+            mClientLab.addOrder(mOrder, mProducts);
+            Objects.requireNonNull(getActivity()).finish();
         });
 
         clientTitle.setThreshold(4);
         clientTitle.setAdapter(new ClientAutoCompleteAdapter(getActivity()));
         clientTitle.setLoadingIndicator((ProgressBar) view.findViewById(R.id.progress_bar));
-        clientTitle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                // Выбор клиента из предложенного списка
-                Contragent client = (Contragent) adapterView.getItemAtPosition(position);
-                clientTitle.setText(client.name);
-                addressTitle.requestFocus();
-                mClientLab.setCurrentClient(client);
-                List<Address> addresses = mClientLab.getAddressesByClient(client);
-                if (addresses.size() == 1) {
-                    addressTitle.setText(addresses.get(0).name);
-                    productTitle.requestFocus();
-                } else {
-                    addressTitle.setText(" ");
-                }
+        clientTitle.setOnItemClickListener((adapterView, view1, position, id) -> {
+            // Выбор клиента из предложенного списка
+            Contragent client = (Contragent) adapterView.getItemAtPosition(position);
+            clientTitle.setText(client.name);
+            addressTitle.requestFocus();
+            mClientLab.setCurrentClient(client);
+            List<Address> addresses = mClientLab.getAddressesByClient(client);
+            if (addresses.size() == 1) {
+                addressTitle.setText(addresses.get(0).name);
+                productTitle.requestFocus();
+            } else {
+                addressTitle.setText(" ");
             }
         });
 
         addressTitle.setThreshold(1);
         addressTitle.setAdapter(new AddressAutoCompleteAdapter(getContext()));
-        addressTitle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                // Выбор адреса из предложенного списка
-                Address address = (Address) adapterView.getItemAtPosition(position);
-                addressTitle.setText(address.name);
-                productTitle.requestFocus();
-            }
+        addressTitle.setOnItemClickListener((adapterView, view12, position, id) -> {
+            // Выбор адреса из предложенного списка
+            Address address = (Address) adapterView.getItemAtPosition(position);
+            addressTitle.setText(address.name);
+            productTitle.requestFocus();
         });
 
         productTitle.setThreshold(5);
         productTitle.setAdapter(new ProductAutoCompleteAdapter(getContext()));
-        productTitle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                // Выбор продукта из предложенного списка
-                ProductItem productItem = (ProductItem) adapterView.getItemAtPosition(position);
-                mProducts.add(productItem);
-                productTitle.setText("");
-                updateUI();
-            }
+        productTitle.setOnItemClickListener((adapterView, view13, position, id) -> {
+            // Выбор продукта из предложенного списка
+            ProductItem productItem = (ProductItem) adapterView.getItemAtPosition(position);
+            mProducts.add(productItem);
+            productTitle.setText("");
+            updateUI();
         });
 
         return view;
@@ -187,13 +176,13 @@ public class OrderFragment extends Fragment {
         if (mAdapter == null) {
             Log.d(TAG, "updateUI mAdapter == null");
             mAdapter = new OrderFragment.ProductListAdapter(mProducts);
-            mProductReclerView.setAdapter(mAdapter);
+            mProductRecyclerView.setAdapter(mAdapter);
             enableSwipeToDeleteAndUndo();
         } else {
             Log.d(TAG, "updateUI mAdapter != null");
             mAdapter.notifyDataSetChanged();
         }
-        Log.d(TAG, "quantity products: " + Integer.toString(mProducts.size()));
+        Log.d(TAG, "quantity products: " + mProducts.size());
     }
 
     /** Подключение интерфейса удаление элемента свайпом влево
@@ -211,13 +200,10 @@ public class OrderFragment extends Fragment {
 
                 Snackbar snackbar = Snackbar
                         .make(mOrderActivityBase, "Элемент был удалён из списка.", Snackbar.LENGTH_LONG);
-                snackbar.setAction("ОТМЕНА", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        // Восстановление удаленной позиции в списке продуктов
-                        mAdapter.restoreItem(item, position);
-                        mProductReclerView.scrollToPosition(position);
-                    }
+                snackbar.setAction("ОТМЕНА", view -> {
+                    // Восстановление удаленной позиции в списке продуктов
+                    mAdapter.restoreItem(item, position);
+                    mProductRecyclerView.scrollToPosition(position);
                 });
 
                 snackbar.setActionTextColor(Color.YELLOW);
@@ -227,13 +213,13 @@ public class OrderFragment extends Fragment {
         };
 
         ItemTouchHelper itemTouchhelper = new ItemTouchHelper(swipeToDeleteCallback);
-        itemTouchhelper.attachToRecyclerView(mProductReclerView);
+        itemTouchhelper.attachToRecyclerView(mProductRecyclerView);
     }
 
     private class ProductHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private TextView mNameProduct;
-        private TextView mQuantityProducts;
+        private final TextView mNameProduct;
+        private final TextView mQuantityProducts;
         private ProductItem mProduct;
 
         public ProductHolder(View view) {
@@ -266,7 +252,7 @@ public class OrderFragment extends Fragment {
             View promptsView = li.inflate(R.layout.prompt, null);
 
             //Создаем AlertDialog
-            AlertDialog.Builder mDialogBuilder = new AlertDialog.Builder(getActivity());
+            AlertDialog.Builder mDialogBuilder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()));
 
             //Настраиваем prompt.xml для нашего AlertDialog:
             mDialogBuilder.setView(promptsView);
@@ -279,19 +265,13 @@ public class OrderFragment extends Fragment {
             mDialogBuilder
                     .setCancelable(false)
                     .setPositiveButton("OK",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    //Вводим текст и отображаем в строке ввода на основном экране:
-                                    mProduct.quantity = userInput.getText().toString();
-                                    updateUI();
-                                }
+                            (dialog, id) -> {
+                                //Вводим текст и отображаем в строке ввода на основном экране:
+                                mProduct.quantity = userInput.getText().toString();
+                                updateUI();
                             })
                     .setNegativeButton("Отмена",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.cancel();
-                                }
-                            });
+                            (dialog, id) -> dialog.cancel());
 
             //Создаем AlertDialog:
             AlertDialog alertDialog = mDialogBuilder.create();
@@ -309,6 +289,7 @@ public class OrderFragment extends Fragment {
             this.data = data;
         }
 
+        @NonNull
         @Override
         public OrderFragment.ProductHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View itemView;

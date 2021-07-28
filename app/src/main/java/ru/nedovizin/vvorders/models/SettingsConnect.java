@@ -3,6 +3,7 @@ package ru.nedovizin.vvorders.models;
 import android.util.Base64;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 /** Описание настроек
  *
@@ -42,7 +43,7 @@ public class SettingsConnect {
         this.password = password;
     }
 
-    public String getAuthBase64() throws UnsupportedEncodingException {
-        return "Basic " + Base64.encodeToString((login + ":" + password).getBytes("UTF-8"), Base64.NO_WRAP);
+    public String getAuthBase64() {
+        return "Basic " + Base64.encodeToString((login + ":" + password).getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
     }
 }

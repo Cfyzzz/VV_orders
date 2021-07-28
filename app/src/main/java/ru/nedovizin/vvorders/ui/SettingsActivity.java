@@ -1,8 +1,7 @@
 package ru.nedovizin.vvorders.ui;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -31,7 +30,7 @@ public class SettingsActivity extends AppCompatActivity {
     public String OK_STATUS = "Ok";
 
     private Button mSaveSettingsButton;
-    private Button mUpdateCleintsButton;
+    private Button mUpdateClientsButton;
     private Button mUpdateProductsButton;
     private TextView mConnectlineTv;
     private TextView mSettingsStatus;
@@ -39,7 +38,6 @@ public class SettingsActivity extends AppCompatActivity {
     private EditText mPasswrd;
     private SettingsConnect mSettingsConnect;
     private APIInterface apiInterface;
-    private View mSettingsLayout;
     private static final String TAG = ".SettingsActivity";
 
     @Override
@@ -47,7 +45,6 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        mSettingsLayout = findViewById(R.id.settings_layout);
         mConnectlineTv = findViewById(R.id.connect_line_settings);
         mLogin = findViewById(R.id.login_settings);
         mPasswrd = findViewById(R.id.passwrd_settings);
@@ -59,43 +56,34 @@ public class SettingsActivity extends AppCompatActivity {
         mLogin.setText(mSettingsConnect.getLogin());
         mPasswrd.setText(mSettingsConnect.getPassword());
 
-        mUpdateCleintsButton = findViewById(R.id.update_clients);
-        mUpdateCleintsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Обновить клиентов из Базы
-                mSettingsStatus.setText("");
-                String url_api = mConnectlineTv.getText().toString();
-                apiInterface = APIClient.getData(url_api).create(APIInterface.class);
-                loadClients();
-            }
+        mUpdateClientsButton = findViewById(R.id.update_clients);
+        mUpdateClientsButton.setOnClickListener(v -> {
+            // Обновить клиентов из Базы
+            mSettingsStatus.setText("");
+            String url_api = mConnectlineTv.getText().toString();
+            apiInterface = APIClient.getData(url_api).create(APIInterface.class);
+            loadClients();
         });
 
         mUpdateProductsButton = findViewById(R.id.update_products);
-        mUpdateProductsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Обновить список продуктов из базы
-                mSettingsStatus.setText("");
-                String url_api = mConnectlineTv.getText().toString();
-                apiInterface = APIClient.getData(url_api).create(APIInterface.class);
-                loadProducts();
-            }
+        mUpdateProductsButton.setOnClickListener(v -> {
+            // Обновить список продуктов из базы
+            mSettingsStatus.setText("");
+            String url_api = mConnectlineTv.getText().toString();
+            apiInterface = APIClient.getData(url_api).create(APIInterface.class);
+            loadProducts();
         });
 
         mSaveSettingsButton = findViewById(R.id.save_settings_button);
-        mSaveSettingsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Сохранить настройки в базе
-                String host = mConnectlineTv.getText().toString();
-                String login = mLogin.getText().toString();
-                String password = mPasswrd.getText().toString();
-                mSettingsConnect = new SettingsConnect(host, login, password);
+        mSaveSettingsButton.setOnClickListener(v -> {
+            // Сохранить настройки в базе
+            String host = mConnectlineTv.getText().toString();
+            String login = mLogin.getText().toString();
+            String password = mPasswrd.getText().toString();
+            mSettingsConnect = new SettingsConnect(host, login, password);
 
-                ClientLab.get(getBaseContext()).setSettingsConnect(mSettingsConnect);
-                mSettingsStatus.setText("Настройки сохранены");
-            }
+            ClientLab.get(getBaseContext()).setSettingsConnect(mSettingsConnect);
+            mSettingsStatus.setText("Настройки сохранены");
         });
     }
 
@@ -103,32 +91,25 @@ public class SettingsActivity extends AppCompatActivity {
      *
      */
     private void loadProducts() {
-        try {
-            Call<MultipleResource> call = apiInterface.doGetListProducts(mSettingsConnect.getAuthBase64());
-            loadData(call);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        Call<MultipleResource> call = apiInterface.doGetListProducts(mSettingsConnect.getAuthBase64());
+        loadData(call);
     }
 
     /** Загрузить с AS список клиентов данного менеджера
      *
      */
     private void loadClients() {
-        try {
-            Call<MultipleResource> call = apiInterface.doGetListClients(mSettingsConnect.getAuthBase64());
-            loadData(call);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        Call<MultipleResource> call = apiInterface.doGetListClients(mSettingsConnect.getAuthBase64());
+        loadData(call);
     }
 
     /** Загрузить данные с AS: клиенты, адреса, продукты
      *
-     * @param call
+     * @param call Объект Call класса
      */
     private void loadData(Call<MultipleResource> call) {
         call.enqueue(new Callback<MultipleResource>() {
+            @SuppressLint("SetTextI18n")
             @Override
             public void onResponse(Call<MultipleResource> call, Response<MultipleResource> response) {
                 if (response.code() == 200) {
@@ -144,26 +125,26 @@ public class SettingsActivity extends AppCompatActivity {
                         List<Product> mProduct = answer.mProducts;
 
                         // Пытаемся записать в базу принятые данные
-                        ClientLab clietnLab = ClientLab.get(getBaseContext());
+                        ClientLab clientLab = ClientLab.get(getBaseContext());
 
                         if (mContragents != null) {
-                            clietnLab.updateActivityToFalseAllClients();
+                            clientLab.updateActivityToFalseAllClients();
                             for (Contragent contragent : mContragents) {
-                                clietnLab.addClient(contragent);
+                                clientLab.addClient(contragent);
                             }
                         }
 
                         if (mAdresses != null) {
-                            clietnLab.updateActivityToFalseAllAddresses();
+                            clientLab.updateActivityToFalseAllAddresses();
                             for (Address address : mAdresses) {
-                                clietnLab.addAddress(address);
+                                clientLab.addAddress(address);
                             }
                         }
 
                         if (mProduct != null) {
-                            clietnLab.updateActivityToFalseAllProducts();
+                            clientLab.updateActivityToFalseAllProducts();
                             for (Product product : mProduct) {
-                                clietnLab.addProduct(product);
+                                clientLab.addProduct(product);
                             }
                         }
 
@@ -176,9 +157,10 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             }
 
+            @SuppressLint("SetTextI18n")
             @Override
             public void onFailure(Call<MultipleResource> call, Throwable t) {
-                mSettingsStatus.setText("Ошибка соединения (Failure): " + TAG);
+                mSettingsStatus.setText(R.string.message_server_is_not_recieve + TAG);
             }
         });
     }
