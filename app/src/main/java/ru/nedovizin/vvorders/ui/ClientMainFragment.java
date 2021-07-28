@@ -418,9 +418,7 @@ public class ClientMainFragment extends Fragment {
                     if (response.code() != 200)
                         return;
                     if (response.body().status.equals("Ok")) {
-                        Order order = ClientLab.get(getContext()).getOrder(codeOrder);
-                        ClientLab.get(getContext()).activateOrder(order);
-                        updateUI();
+                        restoreDeletedOrder(codeOrder);
                     } else {
                         mStatusLine.setText(response.body().description);
                     }
@@ -468,12 +466,14 @@ public class ClientMainFragment extends Fragment {
                         snackbar.setActionTextColor(Color.YELLOW);
                         snackbar.show();
                     } else {
+                        restoreDeletedOrder(codeOrder);
                         mStatusLine.setText(response.body().description);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<MultipleResource> call, Throwable t) {
+                    restoreDeletedOrder(codeOrder);
                     Log.d(TAG, "sendDeleteOrder failure");
                     mStatusLine.setText("Сервер не отвечает (failure)");
                 }
@@ -560,5 +560,16 @@ public class ClientMainFragment extends Fragment {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Восстанавливает удалённую заявку
+     *
+     * @param codeOrder Поле код {@code code} заявки
+     */
+    private void restoreDeletedOrder(String codeOrder) {
+        Order order = ClientLab.get(getContext()).getOrder(codeOrder);
+        ClientLab.get(getContext()).activateOrder(order);
+        updateUI();
     }
 }
