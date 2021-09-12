@@ -2,13 +2,6 @@ package ru.nedovizin.vvorders;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.Filter;
-import android.widget.Filterable;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,77 +13,22 @@ import ru.nedovizin.vvorders.models.Product;
 /** Вспомогательный класс для подбора продуктов
  *
  */
-public class ProductAutoCompleteAdapter extends BaseAdapter implements Filterable {
-
-    private final Context mContext;
-    private List<ProductItem> mResults;
+public class ProductAutoCompleteAdapter extends AutoCompleteAdapter<ProductItem> {
 
     public ProductAutoCompleteAdapter(Context context) {
-        mContext = context;
-        mResults = new ArrayList<ProductItem>();
+        super(context);
     }
 
     @Override
-    public int getCount() {
-        return mResults.size();
+    public String getNameEntity(ProductItem productItem) {
+        return productItem.product.name;
     }
 
     @Override
-    public ProductItem getItem(int index) {
-        return mResults.get(index);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        if (convertView == null) {
-            LayoutInflater inflater = LayoutInflater.from(mContext);
-            convertView = inflater.inflate(R.layout.table_simple_row, parent, false);
-        }
-        ProductItem productItem = getItem(position);
-        Product product = productItem.product;
-        TextView tv = convertView.findViewById(R.id.row_col3);
-        tv.setText(product.name);
-        return convertView;
-    }
-
-    @Override
-    public Filter getFilter() {
-        Filter filter = new Filter() {
-            @Override
-            protected FilterResults performFiltering(CharSequence constraint) {
-                FilterResults filterResults = new FilterResults();
-                if (constraint != null) {
-                    List<ProductItem> productItems = findProducts(constraint.toString());
-                    // Assign the data to the FilterResults
-                    filterResults.values = productItems;
-                    filterResults.count = productItems.size();
-                }
-                return filterResults;
-            }
-
-            @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
-                if (results != null && results.count > 0) {
-                    mResults = (List<ProductItem>) results.values;
-                    notifyDataSetChanged();
-                } else {
-                    notifyDataSetInvalidated();
-                }
-            }
-        };
-
-        return filter;
-    }
-
-    private List<ProductItem> findProducts(String productTitle) {
+    public List<ProductItem> findEntities(String productTitle) {
         List<Product> products = new ArrayList<>();
         List<ProductItem> productItems = new ArrayList<>();
-        ClientLab clientLab = ClientLab.get(mContext);
+        ClientLab clientLab = ClientLab.get(getContext());
         String quantity = "1";
 
         String product = productTitle.trim()
