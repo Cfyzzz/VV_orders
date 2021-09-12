@@ -17,7 +17,6 @@ public interface APIInterface {
     @GET("/OrdersAS/hs/db/update_clients")
     Call<MultipleResource> doGetListClients(@Header("Authorization") String auth);
 
-    // TODO - Для получения продуктов не требуется имя менеджера
     @GET("/OrdersAS/hs/db/update_products")
     Call<MultipleResource> doGetListProducts(@Header("Authorization") String auth);
 

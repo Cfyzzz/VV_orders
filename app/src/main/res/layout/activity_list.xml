@@ -8,9 +8,10 @@
     android:id="@+id/activity_list_base">
 
     <Button
+        android:id="@+id/date_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/date_button"/>
+        android:text="Дата"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/table_clients"
