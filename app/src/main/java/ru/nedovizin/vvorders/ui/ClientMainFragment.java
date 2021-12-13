@@ -20,13 +20,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -120,20 +120,16 @@ public class ClientMainFragment extends Fragment {
         newOrderButton = view.findViewById(R.id.new_order_button);
         newOrderButton.setOnClickListener(v -> {
             // Открыть окно для ввода новой заявки
-            Intent intent = new Intent(getContext(), OrderActivity.class);
-            intent.putExtra(EXTRA_DATE, mDateOrder);
-            startActivity(intent);
             Log.d(TAG, "new_order_button.onClick after startActivity");
-            // TODO - Попытка открыть во фрагменте новую заявку,
-            //  но при закрытии заявки закрывается всё приложение
-//                Bundle args = new Bundle();
-//                args.putSerializable(EXTRA_DATE, mDateOrder);
-//                OrderFragment order = OrderFragment.newInstance(null);
-//                order.setArguments(args);
-//                FragmentManager manager = getFragmentManager();
-//                FragmentTransaction transaction = manager.beginTransaction();
-//                transaction.replace(R.id.fragment_container, order);
-//                transaction.commit();
+            Bundle args = new Bundle();
+            args.putSerializable(EXTRA_DATE, mDateOrder);
+            OrderFragment order = OrderFragment.newInstance(null);
+            order.setArguments(args);
+            FragmentManager manager = getFragmentManager();
+            FragmentTransaction transaction = manager.beginTransaction();
+            transaction.replace(R.id.fragment_container, order);
+            transaction.addToBackStack(null);
+            transaction.commit();
         });
 
         sendOrderButton = view.findViewById(R.id.send_button);

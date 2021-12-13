@@ -120,7 +120,7 @@ public class OrderFragment extends Fragment {
             mOrder.address = addressTitle.getText().toString();
             mClientLab.clearProducts(mOrder);
             mClientLab.addOrder(mOrder, mProducts);
-            Objects.requireNonNull(getActivity()).finish();
+            getActivity().onBackPressed();
         });
 
         clientTitle.setThreshold(4);
